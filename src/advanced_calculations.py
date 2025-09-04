@@ -29,8 +29,11 @@ def run_validation_tests():
     test_data = pd.DataFrame({'Close': [10, 12, 15, 13, 16, 18, 17]})
     sma_3 = calculate_sma(test_data, 3).tolist()
     expected_sma_3 = [None, None, 12.33, 13.33, 14.67, 15.67, 17.00]
-    print(f"SMA Test: {sma_3[2:] == [round(x, 2) for x in expected_sma_3[2:]]}")
-    
+
+    sma_rounded = [round(x, 2) if x is not None else None for x in sma_3]
+    expected_rounded = [round(x, 2) if x is not None else None for x in expected_sma_3]
+
+    print(f"SMA Test: {sma_rounded[2:] == expected_rounded[2:]}")
     # Test 2: Max Profit calculation
     test_prices = [7, 1, 5, 3, 6, 4]
     max_profit = calculate_max_profit(test_prices)
