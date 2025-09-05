@@ -119,9 +119,13 @@ python src/calculations.py
 
 # etc.
 Dependencies
+
 pandas - Data manipulation and analysis
+
 matplotlib - Data visualization
+
 yfinance - Yahoo Finance API access
+
 numpy - Numerical operations
 
 Project Requirements Met
@@ -154,6 +158,7 @@ LUSHIQI (2501829)
 License
 
 This project is created for educational purposes as part of the INF1002 Programming Fundamentals course.
+
 
 
 
