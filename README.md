@@ -17,15 +17,25 @@ A comprehensive Python application for stock market trend analysis that calculat
 ## Project Structure
 PyStockAnalyzer/
 ├── data/ # Folder for storing downloaded stock data
+
 ├── src/ # Source code directory
+
 │ ├── data_loader.py # Data fetching from Yahoo Finance
+
 │ ├── calculations.py # Core financial calculations (SMA, runs, returns)
+
 │ ├── advanced_calculations.py # Max profit algorithm & validation tests
+
 │ ├── visualizer.py # Data visualization and result display
+
 │ └── main.py # Main application entry point
+
 ├── test/ # Test directory
+
 ├── .gitignore # Git ignore rules
+
 ├── requirements.txt # Python dependencies
+
 └── README.md # Project documentation
 
 ## File Descriptions
@@ -115,13 +125,21 @@ Project Requirements Met
 This project implements all requirements from the INF1002 Python Project specification:
 
 ✅ Simple Moving Average (SMA) calculation
+
 ✅ Upward and downward run identification
+
 ✅ Daily returns calculation
+
 ✅ Maximum profit calculation (Best Time to Buy and Sell Stock II)
+
 ✅ Visualization of price data with SMA and highlighted trends
+
 ✅ Validation with manual calculations (5+ test cases)
+
 ✅ Modular code design with clear separation of concerns
+
 ✅ Comprehensive documentation
+
 ✅ Team collaboration via GitHub
 
 Contributors
@@ -131,3 +149,4 @@ LUSHIQI (2501829)
 License
 
 This project is created for educational purposes as part of the INF1002 Programming Fundamentals course.
+
