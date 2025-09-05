@@ -16,6 +16,7 @@ A comprehensive Python application for stock market trend analysis that calculat
 
 ## Project Structure
 PyStockAnalyzer/
+
 ├── data/ # Folder for storing downloaded stock data
 
 ├── src/ # Source code directory
@@ -143,10 +144,13 @@ This project implements all requirements from the INF1002 Python Project specifi
 ✅ Team collaboration via GitHub
 
 Contributors
+
 LUSHIQI (2501829)
+
 [Add your name and ID]
 
 License
 
 This project is created for educational purposes as part of the INF1002 Programming Fundamentals course.
+
 
