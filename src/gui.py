@@ -3,7 +3,7 @@ from tkinter import ttk, messagebox, scrolledtext
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from data_loader import fetch_stock_data
-from calculations import calculate_sma, identify_runs, calculate_daily_returns
+from calculations import calculate_sma, identify_runs, calculate_daily_returns, calculate_rsi, calculate_bollinger_bands
 from advanced_calculations import calculate_max_profit
 from visualizer import plot_stock_data, display_analysis_results
 import threading
@@ -11,8 +11,8 @@ import threading
 class StockAnalyzerGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("PyStock Analyzer")
-        self.root.geometry("1000x700")
+        self.root.title("PyStock Analyzer - Enhanced")
+        self.root.geometry("1200x800")
         self.root.configure(bg='#f0f0f0')
         
         self.setup_gui()
@@ -53,15 +53,15 @@ class StockAnalyzerGUI:
         results_frame.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=5)
         
         # Text area for results
-        self.results_text = scrolledtext.ScrolledText(results_frame, height=15, width=70)
+        self.results_text = scrolledtext.ScrolledText(results_frame, height=15, width=80)
         self.results_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
         # Chart section
-        chart_frame = ttk.LabelFrame(main_frame, text="Price Chart", padding="10")
+        chart_frame = ttk.LabelFrame(main_frame, text="Price Chart with Technical Indicators", padding="10")
         chart_frame.grid(row=2, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=5)
         
         # Matplotlib figure
-        self.fig, self.ax = plt.subplots(figsize=(10, 4))
+        self.fig, self.ax = plt.subplots(figsize=(12, 6))
         self.canvas = FigureCanvasTkAgg(self.fig, chart_frame)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
@@ -109,11 +109,15 @@ class StockAnalyzerGUI:
             returns = calculate_daily_returns(stock_data)
             max_profit = calculate_max_profit(stock_data['Close'].tolist())
             
+            # Calculate advanced indicators
+            rsi = calculate_rsi(stock_data, 14)
+            upper_band, middle_band, lower_band = calculate_bollinger_bands(stock_data, 20, 2)
+            
             # Display results
-            self._display_results(stock_data, sma, runs_data, returns, max_profit, sma_window)
+            self._display_results(stock_data, sma, runs_data, returns, max_profit, sma_window, rsi, upper_band, middle_band, lower_band)
             
             # Update chart
-            self._update_chart(stock_data, sma, sma_window)
+            self._update_chart(stock_data, sma, sma_window, upper_band, lower_band)
             
             self.status_var.set(f"Analysis complete for {ticker}!")
             
@@ -122,11 +126,11 @@ class StockAnalyzerGUI:
         finally:
             self.analyze_btn.config(state='normal')
             
-    def _display_results(self, data, sma, runs_data, returns, max_profit, sma_window):
-        """Display analysis results in the text area"""
-        result_text = f"{'='*50}\n"
-        result_text += "STOCK ANALYSIS RESULTS\n"
-        result_text += f"{'='*50}\n\n"
+    def _display_results(self, data, sma, runs_data, returns, max_profit, sma_window, rsi, upper_band, middle_band, lower_band):
+        """Display enhanced analysis results with RSI and Bollinger Bands"""
+        result_text = f"{'='*60}\n"
+        result_text += "ENHANCED STOCK ANALYSIS RESULTS\n"
+        result_text += f"{'='*60}\n\n"
         
         result_text += f"1. SIMPLE MOVING AVERAGE ({sma_window} days):\n"
         result_text += f"   Latest SMA value: ${sma.iloc[-1]:.2f}\n\n"
@@ -145,12 +149,29 @@ class StockAnalyzerGUI:
         result_text += f"   Maximum achievable profit: ${max_profit:.2f}\n"
         result_text += f"   (Multiple transactions allowed)\n\n"
         
-        result_text += f"5. DATA SUMMARY:\n"
+        # RSI Analysis
+        result_text += f"5. RELATIVE STRENGTH INDEX (RSI):\n"
+        result_text += f"   Current RSI: {rsi.iloc[-1]:.2f}\n"
+        rsi_status = "Overbought (>70)" if rsi.iloc[-1] > 70 else "Oversold (<30)" if rsi.iloc[-1] < 30 else "Neutral"
+        result_text += f"   Interpretation: {rsi_status}\n"
+        result_text += f"   RSI Range: {rsi.min():.2f} to {rsi.max():.2f}\n\n"
+        
+        # Bollinger Bands Analysis
+        result_text += f"6. BOLLINGER BANDS ANALYSIS:\n"
+        current_price = data['Close'].iloc[-1]
+        band_status = "Above Upper Band (Overbought)" if current_price > upper_band.iloc[-1] else "Below Lower Band (Oversold)" if current_price < lower_band.iloc[-1] else "Within Bands (Neutral)"
+        result_text += f"   Current Price: {band_status}\n"
+        band_width = (upper_band.iloc[-1] - lower_band.iloc[-1]) / middle_band.iloc[-1] * 100
+        result_text += f"   Band Width: {band_width:.2f}% (Higher = More Volatile)\n\n"
+        
+        # Data Summary
+        result_text += f"7. DATA SUMMARY:\n"
         result_text += f"   Period: {data.index[0].date()} to {data.index[-1].date()}\n"
         result_text += f"   Total trading days: {len(data)}\n"
         result_text += f"   Starting price: ${data['Close'].iloc[0]:.2f}\n"
         result_text += f"   Ending price: ${data['Close'].iloc[-1]:.2f}\n"
-        result_text += f"   Total change: {((data['Close'].iloc[-1]/data['Close'].iloc[0])-1)*100:.2f}%\n"
+        total_change = ((data['Close'].iloc[-1] / data['Close'].iloc[0]) - 1) * 100
+        result_text += f"   Total change: {total_change:.2f}%\n"
         
         # Update GUI in main thread
         self.root.after(0, lambda: self._update_results_text(result_text))
@@ -160,20 +181,25 @@ class StockAnalyzerGUI:
         self.results_text.delete(1.0, tk.END)
         self.results_text.insert(1.0, text)
         
-    def _update_chart(self, data, sma, sma_window):
-        """Update the matplotlib chart"""
+    def _update_chart(self, data, sma, sma_window, upper_band, lower_band):
+        """Update the matplotlib chart with technical indicators"""
         self.ax.clear()
         
         # Plot closing price
-        self.ax.plot(data.index, data['Close'], label='Closing Price', color='blue', alpha=0.7)
+        self.ax.plot(data.index, data['Close'], label='Closing Price', color='blue', alpha=0.7, linewidth=1.5)
         
         # Plot SMA
         self.ax.plot(data.index, sma, label=f'SMA ({sma_window} days)', color='red', linewidth=2)
         
+        # Plot Bollinger Bands
+        self.ax.plot(data.index, upper_band, label='Upper Bollinger Band', color='green', linestyle='--', alpha=0.7)
+        self.ax.plot(data.index, lower_band, label='Lower Bollinger Band', color='red', linestyle='--', alpha=0.7)
+        self.ax.fill_between(data.index, lower_band, upper_band, alpha=0.1, color='gray', label='Bollinger Band Area')
+        
         # Format chart
-        self.ax.set_title(f'Stock Price with {sma_window}-Day SMA')
-        self.ax.set_xlabel('Date')
-        self.ax.set_ylabel('Price ($)')
+        self.ax.set_title(f'{self.ticker_var.get()} Price with Technical Indicators', fontsize=14, fontweight='bold')
+        self.ax.set_xlabel('Date', fontweight='bold')
+        self.ax.set_ylabel('Price ($)', fontweight='bold')
         self.ax.legend()
         self.ax.grid(True, alpha=0.3)
         self.ax.tick_params(axis='x', rotation=45)

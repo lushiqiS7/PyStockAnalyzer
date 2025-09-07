@@ -1,17 +1,17 @@
 import pandas as pd
 import numpy as np
-from calculations import calculate_sma, identify_runs, calculate_daily_returns
+from calculations import calculate_sma, identify_runs, calculate_daily_returns, calculate_rsi, calculate_bollinger_bands
 from advanced_calculations import calculate_max_profit
 
 def run_comprehensive_validation():
     """Run comprehensive validation of all core functionalities."""
     print("=" * 60)
-    print("COMPREHENSIVE VALIDATION SUITE")
+    print("COMPREHENSIVE VALIDATION SUITE - ENHANCED")
     print("=" * 60)
     
     # Create test data
     test_data = pd.DataFrame({
-        'Close': [10, 12, 15, 13, 16, 18, 17, 19, 22, 20]
+        'Close': [10, 12, 15, 13, 16, 18, 17, 19, 22, 20, 25, 23, 21, 24, 26]
     })
     
     # Test 1: Simple Moving Average
@@ -70,6 +70,28 @@ def run_comprehensive_validation():
     print("\n" + "=" * 60)
     print("VALIDATION COMPLETE")
     print("=" * 60)
+
+    # NEW: Test RSI Calculation
+    print("\n6. RSI VALIDATION")
+    rsi = calculate_rsi(test_data, 14)
+    print(f"RSI values: {rsi.tolist()}")
+    print(f"RSI range: {rsi.min():.2f} to {rsi.max():.2f}")
+    
+    # NEW: Test Bollinger Bands
+    print("\n7. BOLLINGER BANDS VALIDATION")
+    upper_band, middle_band, lower_band = calculate_bollinger_bands(test_data, 20, 2)
+    print(f"Upper Band values: {upper_band.tolist()}")
+    print(f"Middle Band (SMA): {middle_band.tolist()}")
+    print(f"Lower Band values: {lower_band.tolist()}")
+    
+    # Test that bands make logical sense
+    valid_bands = all(upper_band >= middle_band) and all(middle_band >= lower_band)
+    print(f"Bands logical check: {valid_bands}")
+    
+    print("\n" + "=" * 60)
+    print("ENHANCED VALIDATION COMPLETE")
+    print("=" * 60)
+
 
 if __name__ == "__main__":
     run_comprehensive_validation()
