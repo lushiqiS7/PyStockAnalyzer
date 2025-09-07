@@ -2,10 +2,8 @@ from data_loader import fetch_stock_data
 from visualizer import plot_stock_data, display_analysis_results
 from advanced_calculations import run_validation_tests
 
-def main():
-    """
-    Main function to run the PyStock Analyzer application.
-    """
+def cli_interface():
+    """Command-line interface"""
     print("Welcome to PyStock Analyzer!")
     print("=" * 40)
     
@@ -40,6 +38,28 @@ def main():
         filename = f"{ticker}_data.csv"
         stock_data.to_csv(filename)
         print(f"Data saved to {filename}")
+
+def main():
+    """Main function with mode selection"""
+    print("PyStock Analyzer - Choose Interface Mode")
+    print("1. Command Line Interface (CLI)")
+    print("2. Graphical User Interface (GUI)")
+    
+    choice = input("Enter choice (1 or 2): ").strip()
+    
+    if choice == "1":
+        cli_interface()
+    elif choice == "2":
+        try:
+            from gui import main as gui_main
+            gui_main()
+        except ImportError as e:
+            print(f"GUI not available: {e}")
+            print("Falling back to CLI interface...")
+            cli_interface()
+    else:
+        print("Invalid choice. Using CLI interface...")
+        cli_interface()
 
 if __name__ == "__main__":
     main()
