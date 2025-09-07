@@ -6,17 +6,44 @@ from data_loader import fetch_stock_data
 from calculations import calculate_sma, identify_runs, calculate_daily_returns, calculate_rsi, calculate_bollinger_bands
 from advanced_calculations import calculate_max_profit
 from visualizer import plot_stock_data, display_analysis_results
+import json
+from config import app_config as config
 import threading
 
 class StockAnalyzerGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("PyStock Analyzer - Enhanced")
-        self.root.geometry("1200x800")
-        self.root.configure(bg='#f0f0f0')
+        self.root.title("PyStock Analyzer")
+        
+        # Load saved window size or use default
+        window_size = config.get("window_size", {"width": 1000, "height": 700})
+        self.root.geometry(f"{window_size['width']}x{window_size['height']}")
         
         self.setup_gui()
+        self.load_config_values()
+
+    def load_config_values(self):
+        """Load saved configuration values"""
+        self.ticker_var.set(config.get("default_ticker", "AAPL"))
+        self.period_var.set(config.get("default_period", "6mo"))
+        self.sma_var.set(str(config.get("default_sma_window", 10)))
         
+    def save_config_values(self):
+        """Save current configuration values"""
+        config.set("default_ticker", self.ticker_var.get())
+        config.set("default_period", self.period_var.get())
+        config.set("default_sma_window", int(self.sma_var.get()))
+        
+    def on_closing(self):
+        """Save configuration when window closes"""
+        # Save window size
+        config.set("window_size", {
+            "width": self.root.winfo_width(),
+            "height": self.root.winfo_height()
+        })
+        self.save_config_values()
+        self.root.destroy()
+
     def setup_gui(self):
         # Main frame
         main_frame = ttk.Frame(self.root, padding="10")
@@ -76,7 +103,25 @@ class StockAnalyzerGUI:
         main_frame.columnconfigure(0, weight=1)
         main_frame.rowconfigure(1, weight=1)
         main_frame.rowconfigure(2, weight=2)
+
+        # Add settings button
+        settings_btn = ttk.Button(input_frame, text="⚙️", width=3,
+                                 command=self.show_settings)
+        settings_btn.grid(row=0, column=7, padx=5)
         
+        # Bind closing event
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def show_settings(self):
+        """Show settings dialog"""
+        from tkinter import simpledialog
+        # Simple settings implementation - you can expand this
+        new_period = simpledialog.askstring("Settings", "Default period (1mo, 6mo, 1y, etc.):",
+                                           initialvalue=config.get("default_period"))
+        if new_period:
+            config.set("default_period", new_period)
+            self.period_var.set(new_period)
+                
     def analyze_stock(self):
         """Handle stock analysis in a separate thread to prevent GUI freezing"""
         self.analyze_btn.config(state='disabled')

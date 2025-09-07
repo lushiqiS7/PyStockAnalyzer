@@ -1,0 +1,18 @@
+{
+    "default_ticker": "AAPL",
+    "default_period": "6mo",
+    "default_sma_window": 10,
+    "theme": "light",
+    "auto_refresh": false,
+    "refresh_interval": 300,
+    "chart_style": "default",
+    "last_used_tickers": [
+        "AAPL",
+        "TSLA",
+        "MSFT"
+    ],
+    "window_size": {
+        "width": 1706,
+        "height": 1069
+    }
+}
