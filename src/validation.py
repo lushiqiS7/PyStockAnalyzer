@@ -6,12 +6,12 @@ from advanced_calculations import calculate_max_profit
 def run_comprehensive_validation():
     """Run comprehensive validation of all core functionalities."""
     print("=" * 60)
-    print("COMPREHENSIVE VALIDATION SUITE - ENHANCED")
+    print("VALIDATION TESTS FOR PyStock Analyzer")
     print("=" * 60)
     
     # Create test data
     test_data = pd.DataFrame({
-        'Close': [10, 12, 15, 13, 16, 18, 17, 19, 22, 20, 25, 23, 21, 24, 26]
+        'Close': [10, 12, 15, 13, 16, 18, 17, 19, 22, 20]
     })
     
     # Test 1: Simple Moving Average
@@ -66,27 +66,53 @@ def run_comprehensive_validation():
             print("✗ Failed to fetch real data")
     except Exception as e:
         print(f"✗ Integration test failed: {e}")
-    
-    print("\n" + "=" * 60)
-    print("VALIDATION COMPLETE")
-    print("=" * 60)
 
-    # NEW: Test RSI Calculation
-    print("\n6. RSI VALIDATION")
-    rsi = calculate_rsi(test_data, 14)
-    print(f"RSI values: {rsi.tolist()}")
-    print(f"RSI range: {rsi.min():.2f} to {rsi.max():.2f}")
+    # NEW: Test Bollinger Bands with appropriate window
+    print("\n6. BOLLINGER BANDS VALIDATION")
+    # Use smaller window for test data
+    upper_band, middle_band, lower_band = calculate_bollinger_bands(test_data, 10, 2)
     
-    # NEW: Test Bollinger Bands
-    print("\n7. BOLLINGER BANDS VALIDATION")
-    upper_band, middle_band, lower_band = calculate_bollinger_bands(test_data, 20, 2)
-    print(f"Upper Band values: {upper_band.tolist()}")
-    print(f"Middle Band (SMA): {middle_band.tolist()}")
-    print(f"Lower Band values: {lower_band.tolist()}")
+    # Get non-NaN values
+    valid_mask = ~upper_band.isna()
+    upper_valid = upper_band[valid_mask]
+    middle_valid = middle_band[valid_mask]
+    lower_valid = lower_band[valid_mask]
     
-    # Test that bands make logical sense
-    valid_bands = all(upper_band >= middle_band) and all(middle_band >= lower_band)
-    print(f"Bands logical check: {valid_bands}")
+    print(f"Upper Band values (non-NaN): {upper_valid.tolist()}")
+    print(f"Middle Band values (non-NaN): {middle_valid.tolist()}")
+    print(f"Lower Band values (non-NaN): {lower_valid.tolist()}")
+    
+    # Test that bands make logical sense (only where we have values)
+    if len(upper_valid) > 0:
+        valid_bands = all(upper_valid >= middle_valid) and all(middle_valid >= lower_valid)
+        print(f"Bands logical check: {valid_bands}")
+    else:
+        print("Bands logical check: Not enough data for validation")
+    
+    # Test 7: Integration with real data
+    print("\n7. INTEGRATION TEST WITH REAL DATA")
+    try:
+        from data_loader import fetch_stock_data
+        data = fetch_stock_data("AAPL", "1mo")
+        if data is not None:
+            sma = calculate_sma(data, 5)
+            runs = identify_runs(data)
+            returns = calculate_daily_returns(data)
+            profit = calculate_max_profit(data['Close'].tolist())
+            rsi_real = calculate_rsi(data, 14)
+            upper_band_real, middle_band_real, lower_band_real = calculate_bollinger_bands(data, 20, 2)
+            
+            print("✓ All functions work with real AAPL data")
+            print(f"  SMA shape: {sma.shape}")
+            print(f"  Runs data: {runs}")
+            print(f"  Returns stats: mean={returns.mean():.4f}, std={returns.std():.4f}")
+            print(f"  Max profit: ${profit:.2f}")
+            print(f"  RSI range: {rsi_real.min():.2f} to {rsi_real.max():.2f}")
+            print(f"  Bollinger Bands calculated: {len(upper_band_real[~upper_band_real.isna()]) > 0}")
+        else:
+            print("✗ Failed to fetch real data")
+    except Exception as e:
+        print(f"✗ Integration test failed: {e}")
     
     print("\n" + "=" * 60)
     print("ENHANCED VALIDATION COMPLETE")

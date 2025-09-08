@@ -6,80 +6,24 @@ from data_loader import fetch_stock_data
 from calculations import calculate_sma, identify_runs, calculate_daily_returns, calculate_rsi, calculate_bollinger_bands
 from advanced_calculations import calculate_max_profit
 from visualizer import plot_stock_data, display_analysis_results
-import json
-from config import app_config as config
 import threading
-from portfolio_analyzer import PortfolioAnalyzer
 
 class StockAnalyzerGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("PyStock Analyzer")
-        
-        # Load saved window size or use default
-        window_size = config.get("window_size", {"width": 1000, "height": 700})
-        self.root.geometry(f"{window_size['width']}x{window_size['height']}")
+        self.root.title("PyStock Analyzer - Enhanced")
+        self.root.geometry("1200x800")
+        self.root.configure(bg='#f0f0f0')
         
         self.setup_gui()
-        self.load_config_values()
-
-    def load_config_values(self):
-        """Load saved configuration values"""
-        self.ticker_var.set(config.get("default_ticker", "AAPL"))
-        self.period_var.set(config.get("default_period", "6mo"))
-        self.sma_var.set(str(config.get("default_sma_window", 10)))
         
-    def save_config_values(self):
-        """Save current configuration values"""
-        config.set("default_ticker", self.ticker_var.get())
-        config.set("default_period", self.period_var.get())
-        config.set("default_sma_window", int(self.sma_var.get()))
-        
-    def on_closing(self):
-        """Save configuration when window closes"""
-        # Save window size
-        config.set("window_size", {
-            "width": self.root.winfo_width(),
-            "height": self.root.winfo_height()
-        })
-        self.save_config_values()
-        self.root.destroy()
-
     def setup_gui(self):
-        """Setup the main GUI window"""
         # Main frame
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
-        # Create notebook for tabs
-        self.notebook = ttk.Notebook(main_frame)
-        self.notebook.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=5)
-        
-        # Single Stock Analysis Tab
-        single_stock_frame = ttk.Frame(self.notebook, padding="10")
-        self.notebook.add(single_stock_frame, text="Single Stock")
-        
-        # Portfolio Analysis Tab (optional - only if you want it)
-        portfolio_frame = ttk.Frame(self.notebook, padding="10")
-        self.notebook.add(portfolio_frame, text="Portfolio")
-        
-        # Setup the single stock tab (your original GUI content)
-        self.setup_single_stock_tab(single_stock_frame)
-        
-        # Setup portfolio tab (if you want portfolio functionality)
-        self.setup_portfolio_tab(portfolio_frame)
-        
-        # Configure grid weights
-        self.root.columnconfigure(0, weight=1)
-        self.root.rowconfigure(0, weight=1)
-        main_frame.columnconfigure(0, weight=1)
-        main_frame.rowconfigure(0, weight=1)
-    
-
-    def setup_single_stock_tab(self, frame):
-        """Setup single stock analysis tab - THIS IS THE EXISTING GUI CONTENT"""
-        # Input section (your original input fields)
-        input_frame = ttk.LabelFrame(frame, text="Stock Data Input", padding="10")
+        # Input section
+        input_frame = ttk.LabelFrame(main_frame, text="Stock Data Input", padding="10")
         input_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
         
         # Ticker input
@@ -91,7 +35,7 @@ class StockAnalyzerGUI:
         ttk.Label(input_frame, text="Time Period:").grid(row=0, column=2, sticky=tk.W, padx=5)
         self.period_var = tk.StringVar(value="6mo")
         period_combo = ttk.Combobox(input_frame, textvariable=self.period_var, 
-                                values=["1mo", "3mo", "6mo", "1y", "2y"], width=8)
+                                   values=["1mo", "3mo", "6mo", "1y", "2y"], width=8)
         period_combo.grid(row=0, column=3, padx=5)
         
         # SMA window
@@ -101,118 +45,38 @@ class StockAnalyzerGUI:
         
         # Analyze button
         self.analyze_btn = ttk.Button(input_frame, text="Analyze Stock", 
-                                    command=self.analyze_stock)
+                                     command=self.analyze_stock)
         self.analyze_btn.grid(row=0, column=6, padx=10)
         
-        # Settings button
-        settings_btn = ttk.Button(input_frame, text="⚙️", width=3,
-                                command=self.show_settings)
-        settings_btn.grid(row=0, column=7, padx=5)
-        
         # Results section
-        results_frame = ttk.LabelFrame(frame, text="Analysis Results", padding="10")
+        results_frame = ttk.LabelFrame(main_frame, text="Analysis Results", padding="10")
         results_frame.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=5)
         
         # Text area for results
-        self.results_text = scrolledtext.ScrolledText(results_frame, height=15, width=70)
+        self.results_text = scrolledtext.ScrolledText(results_frame, height=15, width=80)
         self.results_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
         # Chart section
-        chart_frame = ttk.LabelFrame(frame, text="Price Chart", padding="10")
+        chart_frame = ttk.LabelFrame(main_frame, text="Price Chart with Technical Indicators", padding="10")
         chart_frame.grid(row=2, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=5)
         
         # Matplotlib figure
-        self.fig, self.ax = plt.subplots(figsize=(10, 4))
+        self.fig, self.ax = plt.subplots(figsize=(12, 6))
         self.canvas = FigureCanvasTkAgg(self.fig, chart_frame)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
         # Status bar
         self.status_var = tk.StringVar(value="Ready to analyze stocks...")
-        status_bar = ttk.Label(frame, textvariable=self.status_var, relief=tk.SUNKEN)
+        status_bar = ttk.Label(main_frame, textvariable=self.status_var, relief=tk.SUNKEN)
         status_bar.grid(row=3, column=0, sticky=(tk.W, tk.E), pady=5)
         
         # Configure grid weights
-        frame.columnconfigure(0, weight=1)
-        frame.rowconfigure(1, weight=1)
-        frame.rowconfigure(2, weight=2)
-    def setup_portfolio_tab(self, frame):
-        """Setup portfolio analysis tab"""
-        # Portfolio input fields
-        ttk.Label(frame, text="Portfolio Analysis", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=4, pady=10)
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0, weight=1)
+        main_frame.columnconfigure(0, weight=1)
+        main_frame.rowconfigure(1, weight=1)
+        main_frame.rowconfigure(2, weight=2)
         
-        # Stock inputs
-        self.portfolio_stocks = []
-        self.portfolio_weights = []
-        
-        for i in range(3):  # Support up to 3 stocks
-            ttk.Label(frame, text=f"Stock {i+1}:").grid(row=i+1, column=0, padx=5, pady=2)
-            stock_var = tk.StringVar(value=["AAPL", "MSFT", "GOOGL"][i] if i < 3 else "")
-            weight_var = tk.StringVar(value=["0.4", "0.3", "0.3"][i] if i < 3 else "0.0")
-            
-            stock_entry = ttk.Entry(frame, textvariable=stock_var, width=8)
-            stock_entry.grid(row=i+1, column=1, padx=5, pady=2)
-            
-            ttk.Label(frame, text="Weight:").grid(row=i+1, column=2, padx=5, pady=2)
-            weight_entry = ttk.Entry(frame, textvariable=weight_var, width=5)
-            weight_entry.grid(row=i+1, column=3, padx=5, pady=2)
-            
-            self.portfolio_stocks.append(stock_var)
-            self.portfolio_weights.append(weight_var)
-        
-        # Analyze portfolio button
-        ttk.Button(frame, text="Analyze Portfolio", command=self.analyze_portfolio).grid(row=5, column=0, columnspan=4, pady=10)
-        
-        # Portfolio results
-        self.portfolio_results = scrolledtext.ScrolledText(frame, height=15, width=70)
-        self.portfolio_results.grid(row=6, column=0, columnspan=4, sticky=(tk.W, tk.E, tk.N, tk.S))
-
-    def analyze_portfolio(self):
-        """Analyze the portfolio"""
-        portfolio = PortfolioAnalyzer()
-        
-        # Add stocks to portfolio
-        for i, (stock_var, weight_var) in enumerate(zip(self.portfolio_stocks, self.portfolio_weights)):
-            ticker = stock_var.get().strip().upper()
-            weight = float(weight_var.get())
-            
-            if ticker and weight > 0:
-                portfolio.add_stock(ticker, weight)
-        
-        # Analyze and display results
-        results = portfolio.analyze_portfolio()
-        self.display_portfolio_results(results)
-
-    def display_portfolio_results(self, results):
-        """Display portfolio analysis results"""
-        if "error" in results:
-            result_text = f"Error: {results['error']}"
-        else:
-            result_text = "PORTFOLIO ANALYSIS RESULTS\n"
-            result_text += "=" * 50 + "\n\n"
-            
-            result_text += f"Total Return: {results['total_return']*100:.2f}%\n"
-            result_text += f"Annual Return: {results['annual_return']*100:.2f}%\n"
-            result_text += f"Annual Volatility: {results['volatility']*100:.2f}%\n"
-            result_text += f"Sharpe Ratio: {results['sharpe_ratio']:.2f}\n"
-            result_text += f"Max Drawdown: {results['max_drawdown']*100:.2f}%\n\n"
-            
-            result_text += "STOCK CONTRIBUTIONS:\n"
-            for ticker, contribution in results['stock_contributions'].items():
-                result_text += f"  {ticker}: {contribution:.1f}%\n"
-        
-        self.portfolio_results.delete(1.0, tk.END)
-        self.portfolio_results.insert(1.0, result_text)
-
-    def show_settings(self):
-        """Show settings dialog"""
-        from tkinter import simpledialog
-        # Simple settings implementation - you can expand this
-        new_period = simpledialog.askstring("Settings", "Default period (1mo, 6mo, 1y, etc.):",
-                                           initialvalue=config.get("default_period"))
-        if new_period:
-            config.set("default_period", new_period)
-            self.period_var.set(new_period)
-                
     def analyze_stock(self):
         """Handle stock analysis in a separate thread to prevent GUI freezing"""
         self.analyze_btn.config(state='disabled')
