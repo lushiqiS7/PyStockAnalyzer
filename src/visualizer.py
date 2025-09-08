@@ -109,6 +109,31 @@ def display_analysis_results(df, sma_window=5):
     
     print("\n" + "=" * 60)
 
+def generate_risk_report(df, returns):
+    """Generate comprehensive risk analysis report"""
+    from calculations import calculate_var, calculate_cvar, calculate_sharpe_ratio, calculate_sortino_ratio
+    
+    risk_metrics = {
+        "Value at Risk (95%)": calculate_var(returns, 0.95) * 100,
+        "Conditional VaR (95%)": calculate_cvar(returns, 0.95) * 100,
+        "Sharpe Ratio": calculate_sharpe_ratio(returns),
+        "Sortino Ratio": calculate_sortino_ratio(returns),
+        "Worst Day": returns.min() * 100,
+        "Best Day": returns.max() * 100,
+        "Positive Days": (returns > 0).sum() / len(returns) * 100
+    }
+    
+    report = "RISK ANALYSIS REPORT\n"
+    report += "=" * 50 + "\n\n"
+    
+    for metric, value in risk_metrics.items():
+        if "Ratio" in metric:
+            report += f"{metric}: {value:.2f}\n"
+        else:
+            report += f"{metric}: {value:.2f}%\n"
+    
+    return report
+
 # Test the functions
 if __name__ == "__main__":
     print("Enhanced visualization module loaded successfully!")

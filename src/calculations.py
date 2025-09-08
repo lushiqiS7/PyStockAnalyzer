@@ -79,31 +79,30 @@ def calculate_rsi(df, window=14):
     Calculate Relative Strength Index (RSI)
     RSI > 70: Overbought (potential sell signal)
     RSI < 30: Oversold (potential buy signal)
-    
-    Args:
-        df (pandas.DataFrame): DataFrame containing stock data with a 'Close' column.
-        window (int): The lookback period for RSI calculation. Default is 14.
-        
-    Returns:
-        pandas.Series: A Series containing the RSI values.
     """
-    # Handle empty or insufficient data
-    if len(df) < window + 1:
-        return pd.Series([np.nan] * len(df), index=df.index)
-    
     delta = df['Close'].diff()
     
     # Separate gains and losses
     gain = delta.where(delta > 0, 0)
     loss = -delta.where(delta < 0, 0)
     
-    # Calculate average gain and loss using exponential moving average
-    avg_gain = gain.ewm(span=window, adjust=False).mean()
-    avg_loss = loss.ewm(span=window, adjust=False).mean()
+    # Calculate average gain and loss
+    avg_gain = gain.rolling(window=window).mean()
+    avg_loss = loss.rolling(window=window).mean()
     
-    # Calculate RS and RSI
+    # Handle division by zero - when avg_loss is 0, RSI should be 100
+    # When both avg_gain and avg_loss are 0, RSI should be 50
     rs = avg_gain / avg_loss
+    rs.replace([np.inf, -np.inf], np.nan, inplace=True)
+    
+    # Calculate RSI
     rsi = 100 - (100 / (1 + rs))
+    
+    # Handle cases where avg_loss is 0 (all gains)
+    rsi[avg_loss == 0] = 100
+    
+    # Handle cases where both avg_gain and avg_loss are 0 (no price change)
+    rsi[(avg_gain == 0) & (avg_loss == 0)] = 50
     
     return rsi
 
@@ -112,20 +111,7 @@ def calculate_bollinger_bands(df, window=20, num_std=2):
     Calculate Bollinger Bands
     Upper Band: SMA + (standard deviation × 2)
     Lower Band: SMA - (standard deviation × 2)
-    
-    Args:
-        df (pandas.DataFrame): DataFrame containing stock data with a 'Close' column.
-        window (int): The lookback period for calculation. Default is 20.
-        num_std (int): Number of standard deviations for bands. Default is 2.
-        
-    Returns:
-        tuple: (upper_band, middle_band, lower_band) as pandas Series
     """
-    # Handle empty or insufficient data
-    if len(df) < window:
-        empty_series = pd.Series([np.nan] * len(df), index=df.index)
-        return empty_series, empty_series, empty_series
-    
     sma = df['Close'].rolling(window=window).mean()
     std = df['Close'].rolling(window=window).std()
     
@@ -133,6 +119,57 @@ def calculate_bollinger_bands(df, window=20, num_std=2):
     lower_band = sma - (std * num_std)
     
     return upper_band, sma, lower_band
+
+def calculate_var(returns, confidence_level=0.95):
+    """
+    Calculate Value at Risk (VaR)
+    Example: "95% chance you won't lose more than X% in a day"
+    """
+    if len(returns) == 0:
+        return 0
+    
+    # Historical VaR
+    var = np.percentile(returns, (1 - confidence_level) * 100)
+    return var
+
+def calculate_cvar(returns, confidence_level=0.95):
+    """
+    Calculate Conditional Value at Risk (CVaR)
+    Average loss on worst-case days
+    """
+    if len(returns) == 0:
+        return 0
+    
+    var = calculate_var(returns, confidence_level)
+    cvar = returns[returns <= var].mean()
+    return cvar if not np.isnan(cvar) else var
+
+def calculate_sharpe_ratio(returns, risk_free_rate=0.02):
+    """
+    Calculate Sharpe Ratio (risk-adjusted return)
+    Higher = better risk-adjusted performance
+    """
+    if len(returns) == 0 or returns.std() == 0:
+        return 0
+    
+    excess_returns = returns - risk_free_rate/252  # Daily risk-free rate
+    return np.sqrt(252) * excess_returns.mean() / excess_returns.std()
+
+def calculate_sortino_ratio(returns, risk_free_rate=0.02):
+    """
+    Calculate Sortino Ratio (downside risk-adjusted return)
+    Like Sharpe but only penalizes downside volatility
+    """
+    if len(returns) == 0:
+        return 0
+    
+    excess_returns = returns - risk_free_rate/252
+    downside_returns = returns[returns < 0]
+    
+    if len(downside_returns) == 0 or downside_returns.std() == 0:
+        return 0
+    
+    return np.sqrt(252) * excess_returns.mean() / downside_returns.std()
 
 # Test the functions immediately
 if __name__ == "__main__":
