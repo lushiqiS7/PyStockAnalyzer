@@ -1,164 +1,141 @@
-﻿# PyStock Analyzer
+PyStock Analyzer
 
-A comprehensive Python application for stock market trend analysis that calculates key financial metrics, identifies market trends, and visualizes results.
+A comprehensive Python application for professional stock market technical analysis. PyStock Analyzer calculates key financial metrics, identifies market trends, and provides advanced visualization for informed investment decisions.
 
-## Features
+🚀 Features
+📊 Core Analysis Functions
+Real-time Data Fetching: Yahoo Finance API integration
 
-- **Data Fetching**: Retrieve historical stock data from Yahoo Finance
-- **Technical Analysis**: 
-  - Simple Moving Average (SMA) calculation
-  - Price run identification (upward/downward streaks)
-  - Daily returns calculation
-  - Maximum profit calculation (Best Time to Buy and Sell Stock II algorithm)
-- **Data Visualization**: Plot closing prices with SMA and highlighted trends
-- **Validation Suite**: Comprehensive testing of all functionalities
-- **User-Friendly Interface**: Command-line interface for easy interaction
+Simple Moving Average (SMA): Trend identification
 
-## Project Structure
+Price Run Analysis: Consecutive upward/downward streaks
+
+Daily Returns Calculation: Volatility measurement
+
+Maximum Profit Algorithm: Best Time to Buy and Sell Stock II solution
+
+📈 Advanced Technical Indicators
+Relative Strength Index (RSI): Overbought/oversold detection
+
+Bollinger Bands: Volatility and reversal points
+
+Multi-timeframe Analysis: 1mo to 2y period selection
+
+🎯 Dual Interface Support
+Command-Line Interface (CLI): For technical users
+
+Graphical User Interface (GUI): User-friendly Tkinter application
+
+Interactive Charts: Matplotlib with professional styling
+
+✅ Validation & Quality
+Comprehensive Test Suite: 5+ validation test cases
+
+Real-time Data Testing: Live market data integration
+
+Error Handling: Robust exception management
+
+📁 Project Structure
 PyStockAnalyzer/
 
-├── data/ # Folder for storing downloaded stock data
+├── .venv/                     # Virtual environment
 
-├── src/ # Source code directory
+├── data/                      # Stock data storage
 
-│ ├── data_loader.py # Data fetching from Yahoo Finance
+├── src/                       # Source code
 
-│ ├── calculations.py # Core financial calculations (SMA, runs, returns)
+│   ├── __pycache__/           # Python cache
 
-│ ├── advanced_calculations.py # Max profit algorithm & validation tests
+│   ├── advanced_calculations.py # Max profit & validation
 
-│ ├── visualizer.py # Data visualization and result display
+│   ├── calculations.py        # Core financial algorithms
 
-│ └── main.py # Main application entry point
+│   ├── data_loader.py         # Yahoo Finance API integration
 
-├── test/ # Test directory
+│   ├── gui.py                # Graphical user interface
 
-├── .gitignore # Git ignore rules
+│   ├── main.py               # Application entry point
 
-├── requirements.txt # Python dependencies
+│   ├── validation.py         # Comprehensive test suite
 
-└── README.md # Project documentation
+│   └── visualizer.py         # Data visualization
 
-## File Descriptions
+├── .gitignore                # Git ignore rules
 
-### src/data_loader.py
-Fetches historical stock data from Yahoo Finance API. Handles data retrieval, error handling, and returns cleaned pandas DataFrames.
+├── README.md                 # Project documentation
 
-**Key Functions:**
-- `fetch_stock_data(ticker, period)`: Downloads stock data for a given ticker and time period
+└── requirements.txt          # Python dependencies
 
-### src/calculations.py
-Contains core financial calculation algorithms for stock analysis.
+📄 File Descriptions
+src/data_loader.py
+Purpose: Data acquisition from Yahoo Finance
+Key Function: fetch_stock_data(ticker, period)
+Features: API integration, error handling, data cleaning
 
-**Key Functions:**
-- `calculate_sma(df, window)`: Computes Simple Moving Average
-- `identify_runs(df)`: Identifies consecutive upward/downward price movements
-- `calculate_daily_returns(df)`: Calculates daily percentage returns
+src/calculations.py
+Purpose: Core financial algorithms
+Key Functions:
 
-### src/advanced_calculations.py
-Implements advanced algorithms and validation tests.
+calculate_sma() - Simple Moving Average
 
-**Key Functions:**
-- `calculate_max_profit(prices)`: Solves "Best Time to Buy and Sell Stock II" problem
-- `run_validation_tests()`: Runs comprehensive validation of all calculations
+identify_runs() - Price trend analysis
 
-### src/visualizer.py
-Handles data visualization and result presentation.
+calculate_daily_returns() - Return calculations
 
-**Key Functions:**
-- `plot_stock_data(df, sma_window)`: Plots price data with SMA and trend highlights
-- `display_analysis_results(df, sma_window)`: Displays formatted analysis results
+calculate_rsi() - Relative Strength Index
 
-### src/main.py
-Main application entry point that integrates all modules.
+calculate_bollinger_bands() - Volatility bands
 
-**Features:**
-- Command-line interface for user interaction
-  
-- Coordinates data fetching, analysis, and visualization
-  
-- Provides option to save results to CSV
+src/advanced_calculations.py
+Purpose: Advanced algorithms
+Key Functions:
 
-### src/validation_suite.py
-Comprehensive testing suite for all project functionalities.
+calculate_max_profit() - Optimal trading strategy
 
-**Features:**
-- Tests all core calculations with both synthetic and real data
-- Validates algorithm correctness against manual calculations
-- Provides detailed output for debugging
+run_validation_tests() - Comprehensive testing
 
-## Installation
+src/visualizer.py
+Purpose: Data visualization
+Features:
 
-1. Clone the repository:
-git clone https://github.com/lushiqi57/PyStockAnalyzer.git
-cd PyStockAnalyzer
+Multi-panel professional charts
 
-2. Create a virtual environment:
-python -m venv .venv
+RSI and Bollinger Band visualization
 
-3. Activate the virtual environment:
-# Windows
-.venv\Scripts\activate
+Trend highlighting
 
-# macOS/Linux
-source .venv/bin/activate
+Formatted result display
 
-4. Install dependencies:
-pip install -r requirements.txt
+src/gui.py
+Purpose: Graphical user interface
+Features:
 
-Run the main application:
+Tkinter-based interface
 
-python src/main.py
-Run the validation suite:
+Real-time progress updates
 
-python src/validation_suite.py
-Run individual modules:
+Interactive chart embedding
 
-python src/data_loader.py
-python src/calculations.py
+Threaded operations
 
-# etc.
-Dependencies
+src/main.py
+Purpose: Application controller
+Features:
 
-pandas - Data manipulation and analysis
+Dual interface mode (CLI/GUI)
 
-matplotlib - Data visualization
+User input handling
 
-yfinance - Yahoo Finance API access
+Module coordination
 
-numpy - Numerical operations
+Data export functionality
 
-Project Requirements Met
-This project implements all requirements from the INF1002 Python Project specification:
+src/validation.py
+Purpose: Comprehensive testing
+Features:
 
-✅ Simple Moving Average (SMA) calculation
+Unit tests for all functions
 
-✅ Upward and downward run identification
+Integration testing
 
-✅ Daily returns calculation
-
-✅ Maximum profit calculation (Best Time to Buy and Sell Stock II)
-
-✅ Visualization of price data with SMA and highlighted trends
-
-✅ Validation with manual calculations (5+ test cases)
-
-✅ Modular code design with clear separation of concerns
-
-✅ Comprehensive documentation
-
-✅ Team collaboration via GitHub
-
-Contributors
-
-LUSHIQI (2501829)
-
-[Add your name and ID]
-
-License
-
-This project is created for educational purposes as part of the INF1002 Programming Fundamentals course.
-
-
-
-
+Validation against manual calculations
