@@ -8,3 +8,11 @@ venv/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Web development
+web/__pycache__/
+*.pyc
+*.pyo
+.env
+.env.local
+.env.production

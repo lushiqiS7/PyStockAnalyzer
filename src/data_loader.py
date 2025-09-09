@@ -2,17 +2,7 @@ import yfinance as yf
 import pandas as pd
 
 def fetch_stock_data(ticker, period="1y"):
-    """
-    Fetches historical stock data from Yahoo Finance.
-    
-    Args:
-        ticker (str): The stock ticker symbol (e.g., 'AAPL', 'TSLA').
-        period (str): The time period to download. Valid periods: 
-                      “1d”, “5d”, “1mo”, “3mo”, “6mo”, “1y”, “2y”, “5y”, “10y”, “ytd”, “max”
-    
-    Returns:
-        pandas.DataFrame: A DataFrame with the stock data.
-    """
+
     try:
         # Download the data
         stock = yf.Ticker(ticker)

@@ -3,16 +3,6 @@ import pandas as pd
 from calculations import calculate_sma, calculate_daily_returns
 
 def calculate_max_profit(prices):
-    """
-    Solves the "Best Time to Buy and Sell Stock II" problem.
-    Calculates maximum profit from multiple buy-sell transactions.
-    
-    Args:
-        prices (list or pandas.Series): Array of stock prices.
-        
-    Returns:
-        float: Maximum profit achievable.
-    """
     max_profit = 0
     for i in range(1, len(prices)):
         if prices[i] > prices[i-1]:
@@ -20,9 +10,6 @@ def calculate_max_profit(prices):
     return max_profit
 
 def run_validation_tests():
-    """
-    Runs validation tests against manual calculations to ensure correctness.
-    """
     print("Running validation tests...")
     
     # Test 1: Simple SMA calculation
@@ -34,6 +21,7 @@ def run_validation_tests():
     expected_rounded = [round(x, 2) if x is not None else None for x in expected_sma_3]
 
     print(f"SMA Test: {sma_rounded[2:] == expected_rounded[2:]}")
+    
     # Test 2: Max Profit calculation
     test_prices = [7, 1, 5, 3, 6, 4]
     max_profit = calculate_max_profit(test_prices)
