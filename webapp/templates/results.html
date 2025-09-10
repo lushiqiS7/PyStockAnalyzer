@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Results for {{ results.ticker }}{% endblock %}
+
+{% block content %}
+<div class="results-header">
+    <h2>📊 Analysis Results for {{ results.ticker }}</h2>
+    <p class="analysis-date">Analyzed on: {{ results.analysis_date }}</p>
+</div>
+
+<div class="results-summary">
+    <div class="summary-card">
+        <h3>📈 Price Summary</h3>
+        <p><strong>Current Price:</strong> ${{ results.current_price }}</p>
+        <p><strong>Start Price:</strong> ${{ results.start_price }}</p>
+        <p><strong>Total Change:</strong> 
+            <span class="{% if results.total_change >= 0 %}positive{% else %}negative{% endif %}">
+                {{ results.total_change }}%
+            </span>
+        </p>
+        <p><strong>Period:</strong> {{ results.period }} ({{ results.data_points }} days)</p>
+    </div>
+</div>
+
+<div class="results-grid">
+    <div class="result-card">
+        <h3>📐 Moving Average</h3>
+        <p><strong>SMA({{ results.sma_window }}):</strong> ${{ results.sma_current }}</p>
+    </div>
+
+    <div class="result-card">
+        <h3>📊 Price Trends</h3>
+        <p><strong>Up Days:</strong> {{ results.up_days }}</p>
+        <p><strong>Down Days:</strong> {{ results.down_days }}</p>
+        <p><strong>Longest Up Streak:</strong> {{ results.longest_up_streak }} days</p>
+        <p><strong>Longest Down Streak:</strong> {{ results.longest_down_streak }} days</p>
+    </div>
+
+    <div class="result-card">
+        <h3>💹 Returns & Risk</h3>
+        <p><strong>Avg Daily Return:</strong> {{ results.avg_return }}</p>
+        <p><strong>Volatility:</strong> {{ results.volatility }}</p>
+        <p><strong>Max Possible Profit:</strong> ${{ results.max_profit }}</p>
+    </div>
+
+    <div class="result-card">
+        <h3>🎚️ RSI Analysis</h3>
+        <p><strong>Current RSI:</strong> {{ results.rsi_current }}</p>
+        <p><strong>Status:</strong> 
+            <span class="{% if results.rsi_status == 'Overbought' %}overbought{% elif results.rsi_status == 'Oversold' %}oversold{% else %}neutral{% endif %}">
+                {{ results.rsi_status }}
+            </span>
+        </p>
+        <p><strong>Range:</strong> {{ results.rsi_min }} - {{ results.rsi_max }}</p>
+    </div>
+</div>
+
+<div class="action-buttons">
+    <a href="{{ url_for('index') }}" class="btn btn-primary">
+        ← Analyze Another Stock
+    </a>
+</div>
+{% endblock %}

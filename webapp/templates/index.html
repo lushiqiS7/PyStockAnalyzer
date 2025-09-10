@@ -83,32 +83,33 @@
             <div class="form-group">
                 <label for="ticker">Stock Ticker:</label>
                 <input type="text" id="ticker" name="ticker" value="AAPL" required 
-                       placeholder="example: AAPL, TSLA, MSFT">
+                    placeholder="e.g., AAPL, TSLA, MSFT">
             </div>
 
             <div class="form-group">
-                <label for="period">time cycle:</label>
+                <label for="period">Time Period:</label>
                 <select id="period" name="period">
-                    <option value="1mo">1month</option>
-                    <option value="3mo">3month</option>
-                    <option value="6mo" selected>6month</option>
-                    <option value="1y">1year</option>
+                    <option value="1mo">1 Month</option>
+                    <option value="3mo">3 Months</option>
+                    <option value="6mo" selected>6 Months</option>
+                    <option value="1y">1 Year</option>
+                    <option value="2y">2 Years</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="sma_window">SMA cycle:</label>
+                <label for="sma_window">SMA Window:</label>
                 <input type="number" id="sma_window" name="sma_window" value="10" 
-                       min="5" max="50" required>
+                    min="5" max="50" required>
             </div>
 
-            <button type="submit">Start Analyze</button>
+            <button type="submit">Analyze Stock</button>
         </form>
     </div>
 
     <div class="examples">
-        <p>popular stocks:</p>
-        <div>
+        <p>Popular Examples:</p>
+        <div class="example-tickers">
             <span class="ticker-badge" onclick="setTicker('AAPL')">AAPL</span>
             <span class="ticker-badge" onclick="setTicker('TSLA')">TSLA</span>
             <span class="ticker-badge" onclick="setTicker('MSFT')">MSFT</span>
