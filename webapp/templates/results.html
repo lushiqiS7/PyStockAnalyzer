@@ -185,8 +185,8 @@
 
 {# Key Insights Section #}
 <div class="results-section">
-  <div class="result-header">
-    <strong>📌 {{ results.ticker }} Key Insights</strong>
+  <div class="results-header">
+    <h2>📌 {{ results.ticker }} Key Insights</h2>
   </div>
 
 <p> &nbsp;&nbsp;&nbsp; </p>
@@ -309,6 +309,11 @@
 <a href="{{ url_for('index') }}" class="btn btn-primary">
         ← Return to Home
 </a>
+
+<a href="{{ url_for('export_results', ticker=results.ticker, period=results.period, sma_window=results.sma_window) }}" class="btn btn-secondary" download>
+    📥 Export Results as CSV
+</a>
+
 </div>
 
 

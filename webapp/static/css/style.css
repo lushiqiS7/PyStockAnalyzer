@@ -66,6 +66,12 @@ gap: 1.5rem;
 margin: 2rem 0;
 }
 
+.comparison-grid {
+  display: flex;       
+  flex-wrap: wrap;      
+  gap: 1.5rem;          
+}
+
 /*Reusable Card Style*/
 .card {
 background: var(--bg-white);
@@ -202,6 +208,7 @@ justify-content: center;
 gap: 10px;
 margin-top: 15px;
 flex-wrap: wrap;
+color: black;
 }
 
 .ticker-badge {

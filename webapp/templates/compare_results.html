@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Compare Stocks{% endblock %}
+
+{% block content %}
+<div class="results-header">
+  <h2>📊 Stock Price Comparison</h2>
+  <p class="analysis-date">Compared on: {{ analysis_date }}</p>
+</div>
+
+<div class="chart-container" style="width: 90%; max-width: 900px; margin: 2rem auto;">
+  <canvas id="closingPricesChart"></canvas>
+</div>
+
+<div class="chart-container" style="width: 90%; max-width: 900px; margin: 2rem auto;">
+  <h3>RSI</h3>
+  <canvas id="rsiChart"></canvas>
+</div>
+
+
+<script>
+  // Pass data from Flask to JS
+  const chartData = {{ all_charts | tojson | safe }};
+  const dates = chartData[Object.keys(chartData)[0]].dates;
+
+  // Generate random colors for datasets
+  function getRandomColor() {
+    return '#' + Math.floor(Math.random() * 16777215).toString(16);
+  }
+
+  function prepareDatasets(key, chartType = 'line', fill = false) {
+    return Object.entries(chartData).map(([ticker, data]) => ({
+      label: ticker,
+      data: data[key],
+      borderColor: getRandomColor(),
+      backgroundColor: fill ? 'rgba(100, 149, 237, 0.5)' : undefined,
+      fill: fill,
+      tension: 0.1,
+      type: chartType
+    }));
+  }
+
+  // Closing Prices Chart
+  const closingCtx = document.getElementById("closingPricesChart").getContext("2d");
+  new Chart(closingCtx, {
+    type: 'line',
+    data: {
+      labels: dates,
+      datasets: prepareDatasets('prices')
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: 'white' } },
+        title: {
+          display: true,
+          text: 'Closing Prices Comparison',
+          color: 'white',
+          font: { size: 18 }
+        }
+      },
+      scales: {
+        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+        y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+      }
+    }
+  });
+
+  // RSI Chart
+  const rsiCtx = document.getElementById("rsiChart").getContext("2d");
+  new Chart(rsiCtx, {
+    type: 'line',
+    data: {
+      labels: dates,
+      datasets: prepareDatasets('rsi')
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: 'white' } },
+        title: {
+          display: true,
+          text: 'Relative Strength Index (RSI)',
+          color: 'white',
+          font: { size: 18 }
+        }
+      },
+      scales: {
+        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+        y: {
+          ticks: { color: 'white' },
+          grid: { color: 'rgba(255,255,255,0.1)' },
+          min: 0,
+          max: 100
+        }
+      }
+    }
+  });
+
+</script>
+
+<div class="comparison-grid">
+  {% for result in all_results %}
+    <div class="result-card">
+      <h3>{{ result.ticker }}</h3>
+      <p><strong>Current Price:</strong> ${{ result.current_price }}</p>
+      <p><strong>Total Change:</strong> {{ result.total_change }}%</p>
+      <p><strong>SMA({{ result.sma_window }}):</strong> ${{ result.sma_current }}</p>
+      <p><strong>RSI:</strong> {{ result.rsi_current }} ({{ result.rsi_status }})</p>
+      <p><strong>Volatility:</strong> {{ result.volatility }}</p>
+      <p><strong>Max Profit:</strong> ${{ result.max_profit }}</p>
+    </div>
+  {% endfor %}
+</div>
+
+<a href="{{ url_for('index') }}" class="btn btn-primary" style="margin-top: 2rem;">← Return to Home</a>
+{% endblock %}

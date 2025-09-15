@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 import sys
 import os
 from datetime import datetime
 import pandas as pd
+from flask.helpers import redirect, url_for
 
 # Add src directory to path to import your modules
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -11,6 +12,7 @@ try:
     from data_loader import fetch_stock_data
     from calculations import calculate_sma, identify_runs, calculate_daily_returns, calculate_rsi, calculate_bollinger_bands
     from advanced_calculations import calculate_max_profit
+    from compare_logic import do_compare_logic
     ANALYSIS_AVAILABLE = True
 except ImportError as e:
     print(f"Analysis modules not available: {e}")
@@ -23,6 +25,25 @@ def index():
     """Main page with stock analysis form"""
     return render_template('index.html', analysis_available=ANALYSIS_AVAILABLE)
 
+@app.route('/analyze_or_compare', methods=['POST'])
+def analyze_or_compare():
+    mode = request.form.get('mode', 'single')
+    tickers_raw = request.form.get('tickers', 'AAPL')
+    tickers = [t.strip().upper() for t in tickers_raw.split(',') if t.strip()]
+    period = request.form.get('period', '6mo')
+    sma_window = int(request.form.get('sma_window', '10'))
+
+    if mode == 'compare' and len(tickers) > 1:
+        # do compare logic
+        all_results, all_charts = do_compare_logic(tickers, period, sma_window)
+        analysis_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        return render_template('compare_results.html',
+                               all_results=all_results, all_charts=all_charts, period=period,  analysis_date=analysis_date)
+    else:
+        # assume single or fallback
+        return redirect(url_for('analyze_stock'), code=307)  # or call analyze logic directly
+    
+    
 @app.route('/analyze', methods=['POST'])
 def analyze_stock():
     """Analyze stock and return results"""
@@ -30,16 +51,19 @@ def analyze_stock():
         return render_template('error.html', error="Analysis modules not available. Please check your installation.")
     
     try:
-        # Get form data
-        ticker = request.form.get('ticker', 'AAPL').upper()
+        # Get and parse form input
+        tickers_input = request.form.get('ticker', 'AAPL')
+        tickers = [t.strip().upper() for t in tickers_input.split(',')]
         period = request.form.get('period', '6mo')
         sma_window = int(request.form.get('sma_window', '10'))
-        
-        # Fetch data
-        stock_data = fetch_stock_data(ticker, period)
-        
-        if stock_data is None or stock_data.empty:
-            return render_template('error.html', error=f"Could not fetch data for {ticker}. Please check the ticker symbol.")
+
+        all_results = []
+        all_charts = {}
+
+        for ticker in tickers:
+            stock_data = fetch_stock_data(ticker, period)
+            if stock_data is None or stock_data.empty:
+                continue
         
         # Perform calculations
         sma = calculate_sma(stock_data, sma_window)
@@ -82,7 +106,18 @@ def analyze_stock():
                 results['rsi_status'] = 'Neutral'
         else:
             results['rsi_status'] = 'N/A'
+            
+        all_results.append(results)  
         
+        # Chart data per ticker
+        all_charts[ticker] = {
+                'dates': [d.strftime('%Y-%m-%d') for d in stock_data.index],
+                'prices': stock_data['Close'].round(2).tolist(),
+                'sma': sma.round(2).where(pd.notnull(sma), None).tolist(),
+                'rsi': rsi.round(2).where(pd.notnull(rsi), None).tolist(),
+                'volume': stock_data['Volume'].astype(int).tolist()
+            }
+
         #prepare data for charts
         chart_data = {
         'dates': [d.strftime('%Y-%m-%d') for d in stock_data.index],
@@ -95,11 +130,44 @@ def analyze_stock():
         # Pass both results and chart_data to template
         return render_template("results.html", results=results, chart_data=chart_data)
 
-
-        
-
     except Exception as e:
         return render_template('error.html', error=f"Analysis error: {str(e)}")
+    
+
+
+#export results as CSV
+@app.route('/export')
+def export_results():
+    if not ANALYSIS_AVAILABLE:
+        return "Export not available", 503
+
+    try:
+        # Get query params
+        ticker = request.args.get('ticker', 'AAPL').upper()
+        period = request.args.get('period', '6mo')
+        sma_window = int(request.args.get('sma_window', '10'))
+
+        # Fetch data
+        stock_data = fetch_stock_data(ticker, period)
+        if stock_data is None or stock_data.empty:
+            return "No data available for export", 400
+
+        # Optional: include SMA in export
+        stock_data['SMA'] = calculate_sma(stock_data, sma_window)
+
+        # Convert to CSV
+        csv_data = stock_data.to_csv(index=True)
+
+        # Return as downloadable file
+        return Response(
+            csv_data,
+            mimetype='text/csv',
+            headers={
+                "Content-Disposition": f"attachment;filename={ticker}_analysis.csv"
+            }
+        )
+    except Exception as e:
+        return f"Export error: {str(e)}", 500
 
 @app.errorhandler(404)
 def not_found(error):
