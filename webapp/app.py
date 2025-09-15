@@ -83,8 +83,21 @@ def analyze_stock():
         else:
             results['rsi_status'] = 'N/A'
         
-        return render_template('results.html', results=results)
+        #prepare data for charts
+        chart_data = {
+        'dates': [d.strftime('%Y-%m-%d') for d in stock_data.index],
+        'prices': stock_data['Close'].round(2).tolist(),
+        'sma': calculate_sma(stock_data, sma_window).round(2).where(pd.notnull(calculate_sma(stock_data, sma_window)), None).tolist(),
+        'rsi': calculate_rsi(stock_data, 14).round(2).where(pd.notnull(calculate_rsi(stock_data, 14)), None).tolist(),
+        'volume': stock_data['Volume'].astype(int).tolist()
+
+    }
+        # Pass both results and chart_data to template
+        return render_template("results.html", results=results, chart_data=chart_data)
+
+
         
+
     except Exception as e:
         return render_template('error.html', error=f"Analysis error: {str(e)}")
 

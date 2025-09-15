@@ -3,61 +3,314 @@
 {% block title %}Results for {{ results.ticker }}{% endblock %}
 
 {% block content %}
+
 <div class="results-header">
-    <h2>📊 Analysis Results for {{ results.ticker }}</h2>
-    <p class="analysis-date">Analyzed on: {{ results.analysis_date }}</p>
+<h2>📊 Analysis Results for {{ results.ticker }}</h2>
+<p class="analysis-date">Analyzed on: {{ results.analysis_date }}</p>
 </div>
 
+{# Charts Section #}
+<div class="chart-container" style="width: 90%; max-width: 900px; margin: 2rem auto;">
+  <h3>📈 Price & SMA Chart</h3>
+  <canvas id="priceSmaChart"></canvas>
+</div>
+
+<div class="chart-container" style="width: 90%; max-width: 900px; margin: 2rem auto;">
+  <h3>🎚️ RSI Chart</h3>
+  <canvas id="rsiChart"></canvas>
+</div>
+
+<div class="chart-container" style="width: 90%; max-width: 900px; margin: 2rem auto;">
+  <h3>📊 Volume Chart</h3>
+  <canvas id="volumeChart"></canvas>
+</div>
+
+
+
+{# Charts Script #}
+<script>
+  
+    const chartData = {{ chart_data | tojson | safe }};
+
+  const labels = chartData.dates;
+  const closingPrices = chartData.prices;
+  const smaValues = chartData.sma;
+  const rsiValues = chartData.rsi;
+  const volumeValues = chartData.volume;
+
+
+  {# Price & SMA Chart #} 
+  const ctxPriceSma = document.getElementById('priceSmaChart').getContext('2d');
+  new Chart(ctxPriceSma, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Closing Price',
+          data: closingPrices,
+          borderColor: 'blue',
+          backgroundColor: 'rgba(0, 0, 255, 0.1)',
+          fill: false,
+          tension: 0.1
+        },
+        {
+          label: `SMA ({{ results.sma_window }})`,
+          data: smaValues,
+          borderColor: 'red',
+          backgroundColor: 'rgba(255, 0, 0, 0.1)',
+          fill: false,
+          tension: 0.1
+        }
+      ]
+    },
+    options: {
+  scales: {
+    x: {
+      ticks: {
+        color: 'white'   // X-axis tick labels
+      },
+      grid: {
+        color: 'rgba(255, 255, 255, 0.1)' // Optional: light grid lines
+      }
+    },
+    y: {
+      ticks: {
+        color: 'white'   // Y-axis tick labels
+      },
+      grid: {
+        color: 'rgba(255, 255, 255, 0.1)'
+      }
+    }
+  },
+  plugins: {
+    legend: {
+      labels: {
+        color: 'white'   // Legend label color
+      }
+    }
+  }
+}
+
+  });
+
+  {# RSI Chart #}
+  const ctxRsi = document.getElementById('rsiChart').getContext('2d');
+  new Chart(ctxRsi, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'RSI (14)',
+        data: rsiValues,
+        borderColor: 'purple',
+        backgroundColor: 'rgba(128, 0, 128, 0.1)',
+        fill: false,
+        tension: 0.1
+      }]
+    },
+    options: {
+  scales: {
+    x: {
+      ticks: {
+        color: 'white'   // X-axis tick labels
+      },
+      grid: {
+        color: 'rgba(255, 255, 255, 0.1)' // Optional: light grid lines
+      }
+    },
+    y: {
+      ticks: {
+        color: 'white'   // Y-axis tick labels
+      },
+      grid: {
+        color: 'rgba(255, 255, 255, 0.1)'
+      }
+    }
+  },
+  plugins: {
+    legend: {
+      labels: {
+        color: 'white'   // Legend label color
+      }
+    }
+  }
+}
+
+  });
+
+  {# Volume Chart #}
+  const ctxVolume = document.getElementById('volumeChart').getContext('2d');
+  new Chart(ctxVolume, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Volume',
+        data: volumeValues,
+        backgroundColor: 'orange',
+        borderWidth: 1
+      }]
+    },
+    options: {
+  scales: {
+    x: {
+      ticks: {
+        color: 'white'   // X-axis tick labels
+      },
+      grid: {
+        color: 'rgba(255, 255, 255, 0.1)' // Optional: light grid lines
+      }
+    },
+    y: {
+      ticks: {
+        color: 'white'   // Y-axis tick labels
+      },
+      grid: {
+        color: 'rgba(255, 255, 255, 0.1)'
+      }
+    }
+  },
+  plugins: {
+    legend: {
+      labels: {
+        color: 'white'   // Legend label color
+      }
+    }
+  }
+}
+
+  });
+</script>
+
+{# Key Insights Section #}
+<div class="results-section">
+  <div class="result-header">
+    <strong>📌 {{ results.ticker }} Key Insights</strong>
+  </div>
+
+<p> &nbsp;&nbsp;&nbsp; </p>
+
+  <div class="result-card">
+    📈 SMA vs Price:
+    {% if results.sma_current != 'N/A' %}
+      {% if results.current_price > results.sma_current %}
+        Price is above SMA → Possible Uptrend 📈
+      {% elif results.current_price < results.sma_current %}
+        Price is below SMA → Possible Downtrend 📉
+      {% else %}
+        Price equals SMA → Sideways trend ➖
+      {% endif %}
+    {% else %}
+      SMA not available for this period.
+    {% endif %}
+  </div>
+
+  <div class="result-card">
+    🎚️ RSI ({{ results.rsi_current }}):
+    {% if results.rsi_status == 'Overbought' %}
+      Overbought ⚠️ – Consider caution.
+    {% elif results.rsi_status == 'Oversold' %}
+      Oversold 💰 – Possible entry point.
+    {% elif results.rsi_status == 'Neutral' %}
+      Neutral 🟡 – No strong signal.
+    {% else %}
+      RSI data not available.
+    {% endif %}
+  </div>
+
+  <div class="result-card">
+    📊 Streaks:
+    {{ results.longest_up_streak or 0 }}-day up streak, {{ results.longest_down_streak or 0 }}-day down streak.
+  </div>
+
+  <div class="result-card">
+    💹 Return Summary:
+    Stock changed by {{ results.total_change or 'N/A' }}% in {{ results.period or 'N/A' }}.
+    Max theoretical profit (buy low, sell high): ${{ results.max_profit or 'N/A' }}
+
+  </div>
+</div>
+
+<p> &nbsp;&nbsp;&nbsp; </p>
+
+{# Results Summary Section #}
 <div class="results-summary">
-    <div class="summary-card">
-        <h3>📈 Price Summary</h3>
+<div class="summary-card">
+<h3>📈 Price Summary</h3>
         <p><strong>Current Price:</strong> ${{ results.current_price }}</p>
         <p><strong>Start Price:</strong> ${{ results.start_price }}</p>
-        <p><strong>Total Change:</strong> 
+        <p><strong>Current Price:</strong> ${{ results.current_price or 'N/A' }}</p>
+        <p><strong>Start Price:</strong> ${{ results.start_price or 'N/A' }}</p>
+<p><strong>Total Change:</strong> 
             <span class="{% if results.total_change >= 0 %}positive{% else %}negative{% endif %}">
                 {{ results.total_change }}%
             </span>
         </p>
         <p><strong>Period:</strong> {{ results.period }} ({{ results.data_points }} days)</p>
-    </div>
+    <span class="{% if results.total_change >= 0 %}positive{% else %}negative{% endif %}">
+        {{ results.total_change or 'N/A' }}%
+    </span>
+</p>
+<p><strong>Period:</strong> {{ results.period or 'N/A' }} ({{ results.data_points or 0 }} days)</p>
+
+</div>
 </div>
 
 <div class="results-grid">
-    <div class="result-card">
-        <h3>📐 Moving Average</h3>
+<div class="result-card">
+<h3>📐 Moving Average</h3>
         <p><strong>SMA({{ results.sma_window }}):</strong> ${{ results.sma_current }}</p>
-    </div>
+        <p><strong>SMA({{ results.sma_window or 'N/A' }}):</strong> ${{ results.sma_current or 'N/A' }}</p>
+</div>
 
-    <div class="result-card">
-        <h3>📊 Price Trends</h3>
+<div class="result-card">
+<h3>📊 Price Trends</h3>
         <p><strong>Up Days:</strong> {{ results.up_days }}</p>
         <p><strong>Down Days:</strong> {{ results.down_days }}</p>
         <p><strong>Longest Up Streak:</strong> {{ results.longest_up_streak }} days</p>
         <p><strong>Longest Down Streak:</strong> {{ results.longest_down_streak }} days</p>
-    </div>
+        <p><strong>Up Days:</strong> {{ results.up_days or 0 }}</p>
+        <p><strong>Down Days:</strong> {{ results.down_days or 0 }}</p>
+        <p><strong>Longest Up Streak:</strong> {{ results.longest_up_streak or 0 }} days</p>
+        <p><strong>Longest Down Streak:</strong> {{ results.longest_down_streak or 0 }} days</p>
+</div>
 
-    <div class="result-card">
-        <h3>💹 Returns & Risk</h3>
+<div class="result-card">
+<h3>💹 Returns & Risk</h3>
         <p><strong>Avg Daily Return:</strong> {{ results.avg_return }}</p>
         <p><strong>Volatility:</strong> {{ results.volatility }}</p>
         <p><strong>Max Possible Profit:</strong> ${{ results.max_profit }}</p>
-    </div>
+        <p><strong>Avg Daily Return:</strong> {{ results.avg_return or 'N/A' }}</p>
+        <p><strong>Volatility:</strong> {{ results.volatility or 'N/A' }}</p>
+        <p><strong>Max Possible Profit:</strong> ${{ results.max_profit or 'N/A' }}</p>
+</div>
 
-    <div class="result-card">
-        <h3>🎚️ RSI Analysis</h3>
+<div class="result-card">
+<h3>🎚️ RSI Analysis</h3>
         <p><strong>Current RSI:</strong> {{ results.rsi_current }}</p>
-        <p><strong>Status:</strong> 
+        <p><strong>Current RSI:</strong> {{ results.rsi_current or 'N/A' }}</p>
+<p><strong>Status:</strong> 
             <span class="{% if results.rsi_status == 'Overbought' %}overbought{% elif results.rsi_status == 'Oversold' %}oversold{% else %}neutral{% endif %}">
                 {{ results.rsi_status }}
-            </span>
-        </p>
+            <span class="{% if results.rsi_status == 'Overbought' %}overbought
+                        {% elif results.rsi_status == 'Oversold' %}oversold
+                        {% else %}neutral{% endif %}">
+                {{ results.rsi_status or 'N/A' }}
+</span>
+</p>
         <p><strong>Range:</strong> {{ results.rsi_min }} - {{ results.rsi_max }}</p>
-    </div>
+        <p><strong>Range:</strong> {{ results.rsi_min or 'N/A' }} - {{ results.rsi_max or 'N/A' }}</p>
+
+</div>
 </div>
 
 <div class="action-buttons">
-    <a href="{{ url_for('index') }}" class="btn btn-primary">
-        ← Analyze Another Stock
-    </a>
+<a href="{{ url_for('index') }}" class="btn btn-primary">
+        ← Return to Home
+</a>
 </div>
+
+
+
 {% endblock %}
