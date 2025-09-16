@@ -208,6 +208,7 @@ class StockAnalyzerGUI:
         self.fig.tight_layout()
         self.canvas.draw()
 
+
 def main():
     """Main function to start the GUI application"""
     root = tk.Tk()

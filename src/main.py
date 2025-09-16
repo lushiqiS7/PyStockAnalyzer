@@ -2,10 +2,12 @@ from data_loader import fetch_stock_data
 from visualizer import plot_stock_data, display_analysis_results
 from advanced_calculations import run_validation_tests
 
+
 def cli_interface():
     """Command-line interface"""
     print("Welcome to PyStock Analyzer!")
     print("=" * 40)
+    print("This tool helps you analyze stock data with various technical indicators.")
     
     # Run validation tests first
     print("Running validation tests...")
