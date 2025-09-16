@@ -1,275 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}Home - PyStock Analyzer{% endblock %}
+
+{% block content %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PyStock Analyzer</title>
-  <style>
-    /* CSS Variables for Light & Dark Mode */
-    :root {
-      --bg: #f5f5f5;
-      --text: #333;
-      --card-bg: white;
-      --primary: #667eea;
-      --primary-hover: #5a67d8;
-      --badge-bg: #e9ecef;
-      --badge-hover: #dee2e6;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  
+/* General Reset and Base Styles*/
+* {
+box-sizing: border-box;
+}
 
-    body.dark-mode {
-      --bg: #121212;
-      --text: #f0f0f0;
-      --card-bg: #1e1e1e;
-      --primary: #8b5cf6;
-      --primary-hover: #7c3aed;
-      --badge-bg: #2c2c2c;
-      --badge-hover: #3a3a3a;
-    }
+body {
+opacity: 0;
+transition: opacity 0.5s ease, background 0.3s ease;
+font-family: Arial, sans-serif;
+margin: 0;
+padding: 20px;
+max-width: 800px;
+margin-inline: auto;
+background-color: var(--bg);
+color: var(--text);
+}
 
-    /* General Reset and Base Styles*/
-    * {
-      box-sizing: border-box;
-    }
+body.loaded {
+opacity: 1;
+}
 
-    body {
-      opacity: 0;
-      transition: opacity 0.5s ease, background 0.3s ease;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      max-width: 800px;
-      margin-inline: auto;
-      background-color: var(--bg);
-      color: var(--text);
-    }
+.header {
+text-align: center;
+background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+color: white;
+padding: 30px;
+border-radius: 10px;
+margin-bottom: 30px;
+transition: background 0.3s ease;
+}
 
-    body.loaded {
-      opacity: 1;
-    }
+/* Form */
+.form-container {
+background: var(--card-bg);
+padding: 30px;
+border-radius: 10px;
+box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+margin-bottom: 30px;
+animation: fadeInUp 0.6s ease forwards;
+opacity: 0;
+}
 
-    .header {
-      text-align: center;
-      background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
-      color: white;
-      padding: 30px;
-      border-radius: 10px;
-      margin-bottom: 30px;
-      transition: background 0.3s ease;
-    }
+.form-group {
+margin-bottom: 20px;
+}
 
-    /* Form */
-    .form-container {
-      background: var(--card-bg);
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      margin-bottom: 30px;
-      animation: fadeInUp 0.6s ease forwards;
-      opacity: 0;
-    }
+label {
+display: block;
+margin-bottom: 5px;
+font-weight: bold;
+color: var(--text);
+}
 
-    .form-group {
-      margin-bottom: 20px;
-    }
+input, select {
+width: 100%;
+padding: 12px;
+border: 2px solid #ddd;
+border-radius: 5px;
+font-size: 16px;
+transition: border-color 0.3s, box-shadow 0.3s;
+background-color: var(--card-bg);
+color: var(--text);
+}
 
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-      color: var(--text);
-    }
+input:focus, select:focus {
+outline: none;
+border-color: var(--primary);
+box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
 
-    input, select {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #ddd;
-      border-radius: 5px;
-      font-size: 16px;
-      transition: border-color 0.3s, box-shadow 0.3s;
-      background-color: var(--card-bg);
-      color: var(--text);
-    }
+button {
+width: 100%;
+padding: 15px;
+background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+color: white;
+border: none;
+border-radius: 5px;
+font-size: 18px;
+font-weight: bold;
+cursor: pointer;
+transition: transform 0.2s ease, background 0.3s ease;
+}
 
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
-    }
+button:hover {
+transform: translateY(-2px);
+background: var(--primary-hover);
+}
 
-    button {
-      width: 100%;
-      padding: 15px;
-      background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: transform 0.2s ease, background 0.3s ease;
-    }
+.toggle-theme {
+    background: transparent;
+    color: var(--text);
+    border: 2px solid var(--primary);
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 20px;
+    float: right;
+}
 
-    button:hover {
-      transform: translateY(-2px);
-      background: var(--primary-hover);
-    }
+.examples {
+margin-top: 20px;
+text-align: center;
+}
 
-    .toggle-theme {
-      background: transparent;
-      color: var(--text);
-      border: 2px solid var(--primary);
-      margin-top: 20px;
-      padding: 10px;
-      width: auto;
-      border-radius: 5px;
-      font-size: 14px;
-    }
+.example-tickers {
+display: flex;
+justify-content: center;
+flex-wrap: wrap;
+gap: 10px;
+margin-top: 10px;
+}
 
-    .examples {
-      margin-top: 20px;
-      text-align: center;
-    }
+.ticker-badge {
+display: inline-block;
+background: var(--badge-bg);
+padding: 8px 16px;
+border-radius: 20px;
+cursor: pointer;
+transition: background 0.3s, transform 0.2s;
+}
 
-    .example-tickers {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
-    }
+.ticker-badge:hover {
+background: var(--badge-hover);
+transform: scale(1.05);
+}
 
-    .ticker-badge {
-      display: inline-block;
-      background: var(--badge-bg);
-      padding: 8px 16px;
-      border-radius: 20px;
-      cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
-    }
+/*Result Cards*/
+.results-section {
+margin-top: 40px;
+}
 
-    .ticker-badge:hover {
-      background: var(--badge-hover);
-      transform: scale(1.05);
-    }
+.result-card {
+background: var(--card-bg);
+border-radius: 10px;
+padding: 20px;
+box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+margin-bottom: 20px;
+opacity: 0;
+transform: translateY(20px);
+animation: fadeInSlide 0.6s ease forwards;
+}
 
-    /*Result Cards*/
-    .results-section {
-      margin-top: 40px;
-    }
+.result-card:nth-child(2) {
+animation-delay: 0.2s;
+}
 
-    .result-card {
-      background: var(--card-bg);
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeInSlide 0.6s ease forwards;
-    }
+.result-card:nth-child(3) {
+animation-delay: 0.4s;
+}
 
-    .result-card:nth-child(2) {
-      animation-delay: 0.2s;
-    }
+/* Animations*/
+@keyframes fadeInUp {
+0% { opacity: 0; transform: translateY(20px); }
+100% { opacity: 1; transform: translateY(0); }
+}
 
-    .result-card:nth-child(3) {
-      animation-delay: 0.4s;
-    }
+@keyframes fadeInSlide {
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
 
-    /* Animations*/
-    @keyframes fadeInUp {
-      0% { opacity: 0; transform: translateY(20px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
+@media (max-width: 600px) {
+.header h1 {
+font-size: 1.8rem;
+}
 
-    @keyframes fadeInSlide {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+button {
+font-size: 16px;
+padding: 12px;
+}
 
-    @media (max-width: 600px) {
-      .header h1 {
-        font-size: 1.8rem;
-      }
-
-      button {
-        font-size: 16px;
-        padding: 12px;
-      }
-
-      .form-container {
-        padding: 20px;
-      }
-    }
-  </style>
+.form-container {
+padding: 20px;
+}
+}
+</style>
 </head>
 <body>
-  <div class="header">
-    <h1>📈 PyStock Analyzer</h1>
-    <button class="toggle-theme" onclick="toggleTheme()">🌓 Toggle Dark Mode</button>
-  </div>
 
-  <div class="form-container" id="form">
-    <form action="/analyze" method="POST">
-      <div class="form-group">
-        <label for="ticker">Stock Ticker:</label>
-        <input type="text" id="ticker" name="ticker" value="AAPL" required placeholder="e.g., AAPL, TSLA, MSFT" />
-      </div>
+<div class="form-container" id="form">
+  <form method="POST" action="/analyze_or_compare">
+    <input
+      type="text"
+      id="tickerInput"
+      name="tickers"
+      placeholder="Enter tickers separated by commas"
+      autocomplete="off"
+    />
 
-      <div class="form-group">
-        <label for="period">Time Period:</label>
-        <select id="period" name="period">
-          <option value="1mo">1 Month</option>
-          <option value="3mo">3 Months</option>
-          <option value="6mo" selected>6 Months</option>
-          <option value="1y">1 Year</option>
-          <option value="2y">2 Years</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="sma_window">SMA Window:</label>
-        <input type="number" id="sma_window" name="sma_window" value="10" min="5" max="50" required />
-      </div>
-
-      <button type="submit">Confirm</button>
-    </form>
-  </div>
-
-  <div class="examples">
-    <p>Popular Examples:</p>
-    <div class="example-tickers">
-      <span class="ticker-badge" onclick="setTicker('AAPL')">AAPL</span>
-      <span class="ticker-badge" onclick="setTicker('TSLA')">TSLA</span>
-      <span class="ticker-badge" onclick="setTicker('MSFT')">MSFT</span>
-      <span class="ticker-badge" onclick="setTicker('GOOGL')">GOOGL</span>
+    <div class="form-group">
+      <p> &nbsp; </p>
+      <label for="period">Time Period:</label>
+      <select id="period" name="period">
+        <option value="1mo">1 Month</option>
+        <option value="3mo">3 Months</option>
+        <option value="6mo" selected>6 Months</option>
+        <option value="1y">1 Year</option>
+        <option value="2y">2 Years</option>
+      </select>
     </div>
+
+    <div class="form-group">
+      <label for="sma_window">SMA Window:</label>
+      <input
+        type="number"
+        id="sma_window"
+        name="sma_window"
+        value="10"
+        min="5"
+        max="50"
+        required
+      />
+    </div>
+
+    <button type="submit" name="mode" value="single">Analyze Single</button>
+    <p> &nbsp;&nbsp; </p>
+    <button type="submit" name="mode" value="compare">Compare</button>
+  </form>
+  <small>Separate tickers with commas to compare (e.g., AAPL, MSFT)</small>
+</div>
+
+<div class="examples">
+  <p>Popular Examples:</p>
+  <div class="example-tickers">
+    <span class="ticker-badge" data-ticker="AAPL" title="Apple Inc.">🍏 AAPL</span>
+    <span class="ticker-badge" data-ticker="TSLA" title="Tesla, Inc.">🚗 TSLA</span>
+    <span class="ticker-badge" data-ticker="MSFT" title="Microsoft Corporation">💻 MSFT</span>
+    <span class="ticker-badge" data-ticker="GOOGL" title="Alphabet Inc. (Google)">🌐 GOOGL</span>
   </div>
+</div>
 
-  <!-- Sample Results -->
-  <div class="results-section">
-    <div class="result-card">📊 AAPL: SMA shows an upward trend</div>
-    <div class="result-card">📊 TSLA: Currently overbought, monitor RSI</div>
-    <div class="result-card">📊 MSFT: Neutral momentum</div>
-  </div>
+<script>
+  // Add ticker from badge to input field, comma separated without duplicates
+  document.querySelectorAll('.ticker-badge').forEach(badge => {
+    badge.addEventListener('click', () => {
+      const ticker = badge.getAttribute('data-ticker').toUpperCase();
+      const input = document.getElementById('tickerInput');
+      if (!input) return;
 
-  <script>
-    function setTicker(ticker) {
-      document.getElementById("ticker").value = ticker;
-    }
+      let current = input.value.trim();
 
-    // Fade-in on load
-    window.addEventListener("load", () => {
-      document.body.classList.add("loaded");
-      document.getElementById("form").style.opacity = "1";
+      if (current) {
+        // Create array of tickers (uppercase & trimmed)
+        let tickers = current.split(',')
+          .map(t => t.trim().toUpperCase())
+          .filter(t => t.length > 0);
+
+        if (!tickers.includes(ticker)) {
+          tickers.push(ticker);
+          input.value = tickers.join(', ');
+        }
+      } else {
+        input.value = ticker;
+      }
+      input.focus();
     });
+  });
 
-    // Dark mode toggle
-    function toggleTheme() {
-      document.body.classList.toggle("dark-mode");
-    }
-  </script>
-</body>
-</html>
+  // Fade-in on load
+  window.addEventListener('load', () => {
+    document.body.classList.add('loaded');
+    document.getElementById('form').style.opacity = '1';
+  });
+</script>
+
+{% endblock %}

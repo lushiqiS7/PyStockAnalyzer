@@ -1,258 +1,303 @@
 /*Root Variables*/
 :root {
-    --primary: #667eea;
-    --primary-hover: #5a67d8;
-    --accent: #764ba2;
-    --positive: #28a745;
-    --negative: #dc3545;
-    --neutral: #6c757d;
-    --error-bg: #f8d7da;
-    --error-text: #721c24;
-    --bg-white: #fff;
+--primary: #667eea;
+--primary-hover: #5a67d8;
+--accent: #764ba2;
+--positive: #28a745;
+--negative: #dc3545;
+--neutral: #6c757d;
+--error-bg: #f8d7da;
+--error-text: #721c24;
+--bg-white: #fff;
 }
 
 /*Transitions & Animations*/
 .transition {
-    transition: all 0.3s ease;
+transition: all 0.3s ease;
 }
 
 .fade-in {
-    animation: fadeInUp 0.5s ease forwards;
+animation: fadeInUp 0.5s ease forwards;
 }
 
 @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+from {
+opacity: 0;
+transform: translateY(20px);
+}
+to {
+opacity: 1;
+transform: translateY(0);
+}
 }
 
 /*Utility Classes*/
 .text-center {
-    text-align: center;
+text-align: center;
 }
 
 .font-bold {
-    font-weight: bold;
+font-weight: bold;
 }
 
 /*Global Styles*/
 body {
-    transition: background-color 0.3s ease, color 0.3s ease;
+transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /*Header & Results*/
 .results-header {
-    text-align: center;
-    color: white;
-    margin-bottom: 2rem;
+text-align: center;
+color: white;
+margin-bottom: 2rem;
 }
 
 .analysis-date {
     color: #666;
-    font-size: 0.9rem;
-    opacity: 0.8;
+    color: white;
+font-size: 0.9rem;
+opacity: 0.8;
 }
 
 .results-grid {
+<<<<<<< HEAD
     display: block;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
     margin: 2rem 0;
+=======
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+gap: 1.5rem;
+margin: 2rem 0;
+}
+
+.comparison-grid {
+  display: flex;       
+  flex-wrap: wrap;      
+  gap: 1.5rem;          
+>>>>>>> dba2a505672ecc53ceede92c757b53ac4ab8d578
 }
 
 /*Reusable Card Style*/
 .card {
-    background: var(--bg-white);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+background: var(--bg-white);
+border-radius: 12px;
+padding: 1.5rem;
+box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+transform: translateY(-3px);
+box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 }
 
 .result-card,
 .summary-card,
 .error-container {
-    background: var(--bg-white);
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    padding: 1.5rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+background: var(--bg-white);
+border-radius: 12px;
+box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+padding: 1.5rem;
+transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .result-card h3,
 .summary-card h3 {
-    color: var(--primary);
-    margin-bottom: 1rem;
-    border-bottom: 2px solid var(--primary);
-    padding-bottom: 0.5rem;
+color: var(--primary);
+margin-bottom: 1rem;
+border-bottom: 2px solid var(--primary);
+padding-bottom: 0.5rem;
 }
 
 /*Buttons*/
 .btn,
 button[type="submit"] {
-    display: inline-block;
-    padding: 12px 24px;
-    background: var(--primary);
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
-    border: none;
-    font-size: 1rem;
+display: inline-block;
+padding: 12px 24px;
+background: var(--primary);
+color: white;
+text-decoration: none;
+border-radius: 8px;
+font-weight: 600;
+cursor: pointer;
+transition: background 0.3s ease, transform 0.2s ease;
+border: none;
+font-size: 1rem;
 }
 
 .btn:hover,
 button[type="submit"]:hover {
-    background: var(--primary-hover);
-    transform: translateY(-2px);
+background: var(--primary-hover);
+transform: translateY(-2px);
 }
 
 .btn-primary {
-    background: var(--primary);
+background: var(--primary);
 }
 
 .btn-primary:hover {
-    background: var(--primary-hover);
+background: var(--primary-hover);
 }
 
 /*Status Indicators*/
 .positive {
-    color: var(--positive);
-    font-weight: bold;
+color: var(--positive);
+font-weight: bold;
 }
 
 .negative,
 .overbought {
-    color: var(--negative);
-    font-weight: bold;
+color: var(--negative);
+font-weight: bold;
 }
 
 .oversold {
-    color: var(--positive);
-    font-weight: bold;
+color: var(--positive);
+font-weight: bold;
 }
 
 .neutral {
-    color: var(--neutral);
-    font-weight: bold;
+color: var(--neutral);
+font-weight: bold;
 }
 
 /*Forms*/
 .form-container {
-    background: var(--bg-white);
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    margin-bottom: 30px;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
+background: var(--bg-white);
+padding: 30px;
+border-radius: 15px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+margin-bottom: 30px;
+max-width: 500px;
+margin-left: auto;
+margin-right: auto;
 }
 
 .form-group {
-    margin-bottom: 20px;
+margin-bottom: 20px;
 }
 
 .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #555;
+display: block;
+margin-bottom: 8px;
+font-weight: 600;
+color: #555;
 }
 
 .form-group input,
 .form-group select {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    font-size: 16px;
-    transition: border-color 0.3s, box-shadow 0.3s;
+width: 100%;
+padding: 12px;
+border: 2px solid #ddd;
+border-radius: 8px;
+font-size: 16px;
+transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .form-group input:focus,
 .form-group select:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+outline: none;
+border-color: var(--primary);
+box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
 }
 
 /*Examples Section*/
 .examples {
-    text-align: center;
-    color: white;
+text-align: center;
+color: white;
 }
 
 .example-tickers {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 15px;
-    flex-wrap: wrap;
+display: flex;
+justify-content: center;
+gap: 10px;
+margin-top: 15px;
+flex-wrap: wrap;
+color: black;
 }
 
 .ticker-badge {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 10px 20px;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: background 0.3s ease;
+background: rgba(255, 255, 255, 0.2);
+padding: 10px 20px;
+border-radius: 25px;
+cursor: pointer;
+transition: background 0.3s ease;
 }
 
 .ticker-badge:hover {
-    background: rgba(255, 255, 255, 0.3);
+background: rgba(255, 255, 255, 0.3);
 }
 
 /*Errors*/
 .error-container {
-    text-align: center;
-    padding: 40px;
-    max-width: 500px;
-    margin: 0 auto;
+text-align: center;
+padding: 40px;
+max-width: 500px;
+margin: 0 auto;
 }
 
 .error-icon {
-    font-size: 4rem;
-    margin-bottom: 20px;
+font-size: 4rem;
+margin-bottom: 20px;
 }
 
 .error-message {
-    background: var(--error-bg);
-    color: var(--error-text);
-    padding: 15px;
-    border-radius: 8px;
-    margin: 20px 0;
-    font-size: 1.1rem;
+background: var(--error-bg);
+color: var(--error-text);
+padding: 15px;
+border-radius: 8px;
+margin: 20px 0;
+font-size: 1.1rem;
 }
 
 /*Responsive Design */
 @media (max-width: 768px) {
-    .form-container {
-        padding: 20px;
-        margin: 0 10px;
-    }
-
-    .results-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .example-tickers {
-        flex-wrap: wrap;
-    }
-
-    .header h1 {
-        font-size: 2rem;
-    }
+.form-container {
+padding: 20px;
+margin: 0 10px;
 }
+
+.results-grid {
+grid-template-columns: 1fr;
+}
+
+.example-tickers {
+flex-wrap: wrap;
+}
+
+.header h1 {
+font-size: 2rem;
+}
+}
+
+/* Dynamic Summary Cards Section */
+.results-section {
+  margin-top: 3rem;
+}
+
+.results-section .result-card {
+  background: var(--bg-white);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInSlide 0.6s ease forwards;
+}
+
+@keyframes fadeInSlide {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Charts Section */
+  .chart-container h3,
+  .results-header h2,
+  .results-header p {
+    color: white;
+  }
