@@ -4,13 +4,23 @@
 
 {% block content %}
 <div class="error-container">
+<<<<<<< HEAD
     <div class="error-icon">⚠️</div>
     <h2>Something went wrong</h2>
     <p class="error-message">{{ error }}</p>
     <div class="action-buttons">
         <a href="{{ url_for('index') }}" class="btn btn-primary">
-            ← Back to Home
+            ← Return to Home
         </a>
     </div>
+=======
+<div class="error-icon">⚠️</div>
+<h2>Something went wrong</h2>
+<p class="error-message">{{ error }}</p>
+<div class="action-buttons">
+<a href="{{ url_for('index') }}" class="btn btn-primary">
+            ← Return to Home
+</a>
+>>>>>>> dba2a505672ecc53ceede92c757b53ac4ab8d578
 </div>
-{% endblock %}
+</div>
