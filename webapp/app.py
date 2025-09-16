@@ -28,7 +28,9 @@ def index():
 @app.route('/analyze_or_compare', methods=['POST'])
 def analyze_or_compare():
     mode = request.form.get('mode', 'single')
-    tickers_raw = request.form.get('tickers', 'AAPL')
+    tickers_raw = request.form.get('tickers')
+    if not tickers_raw:
+        return "No tickers provided", 400
     tickers = [t.strip().upper() for t in tickers_raw.split(',') if t.strip()]
     period = request.form.get('period', '6mo')
     sma_window = int(request.form.get('sma_window', '10'))
@@ -41,7 +43,7 @@ def analyze_or_compare():
                                all_results=all_results, all_charts=all_charts, period=period,  analysis_date=analysis_date)
     else:
         # assume single or fallback
-        return redirect(url_for('analyze_stock'), code=307)  # or call analyze logic directly
+        return analyze_stock()
     
     
 @app.route('/analyze', methods=['POST'])
@@ -52,7 +54,9 @@ def analyze_stock():
     
     try:
         # Get and parse form input
-        tickers_input = request.form.get('ticker', 'AAPL')
+        tickers_input = request.form.get('tickers')
+        if not tickers_input:
+            return "No tickers provided", 400  # Or show an error page
         tickers = [t.strip().upper() for t in tickers_input.split(',')]
         period = request.form.get('period', '6mo')
         sma_window = int(request.form.get('sma_window', '10'))

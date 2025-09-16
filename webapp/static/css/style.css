@@ -60,12 +60,6 @@ opacity: 0.8;
 }
 
 .results-grid {
-<<<<<<< HEAD
-    display: block;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin: 2rem 0;
-=======
 display: grid;
 grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 gap: 1.5rem;
@@ -76,7 +70,6 @@ margin: 2rem 0;
   display: flex;       
   flex-wrap: wrap;      
   gap: 1.5rem;          
->>>>>>> dba2a505672ecc53ceede92c757b53ac4ab8d578
 }
 
 /*Reusable Card Style*/
@@ -101,6 +94,8 @@ border-radius: 12px;
 box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 padding: 1.5rem;
 transition: transform 0.3s ease, box-shadow 0.3s ease;
+margin-bottom: 2rem;
+
 }
 
 .result-card h3,
