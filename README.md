@@ -283,6 +283,11 @@ Jinja2 - HTML templating
 
 LUSHIQI (2501829) - GUI development, web interface(simple), visualization,Core algorithms, data processing, validation
 
+SYAFIQ YEOH (2500818) - WEBAPP development, Data comparison, HTML & CSS Design, Multi-graph functionality, Dynamic charts
+
+TAN JIN XIANG DARREL (2500182) - 
+
+IAIAN HO WEI DE (2500685) - 
 
 # ✅ Academic Requirements Met
 
