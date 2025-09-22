@@ -12,7 +12,7 @@ try:
     from data_loader import fetch_stock_data
     from calculations import calculate_sma, identify_runs, calculate_daily_returns, calculate_rsi, calculate_bollinger_bands
     from advanced_calculations import calculate_max_profit
-    from compare_logic import do_compare_logic
+    from compare_logic import do_compare_logic, choose_best_stock, score_stock
     ANALYSIS_AVAILABLE = True
 except ImportError as e:
     print(f"Analysis modules not available: {e}")
@@ -25,6 +25,7 @@ def index():
     """Main page with stock analysis form"""
     return render_template('index.html', analysis_available=ANALYSIS_AVAILABLE)
 
+# Combined route to handle both single and compare modes
 @app.route('/analyze_or_compare', methods=['POST'])
 def analyze_or_compare():
     mode = request.form.get('mode', 'single')
@@ -39,13 +40,23 @@ def analyze_or_compare():
         # do compare logic
         all_results, all_charts = do_compare_logic(tickers, period, sma_window)
         analysis_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        return render_template('compare_results.html',
-                               all_results=all_results, all_charts=all_charts, period=period,  analysis_date=analysis_date)
+        best_stock = choose_best_stock(all_results)
+        recommended_ticker = best_stock["ticker"] if best_stock else None
+
+        return render_template(
+            'compare_results.html',
+            all_results=all_results,
+            all_charts=all_charts,
+            analysis_date=analysis_date,
+            recommendation_reason="best overall score across return, risk, and RSI indicators",
+            best_score=best_stock["score"] if best_stock else None,
+            recommended_ticker=recommended_ticker
+        )
     else:
         # assume single or fallback
         return analyze_stock()
     
-    
+ # Single stock analysis   
 @app.route('/analyze', methods=['POST'])
 def analyze_stock():
     """Analyze stock and return results"""

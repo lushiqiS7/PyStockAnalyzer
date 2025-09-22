@@ -296,3 +296,10 @@ font-size: 2rem;
   .results-header p {
     color: white;
   }
+
+  .highlight-card {
+  border-left: 5px solid #4caf50;
+  padding: 1rem;
+  background-color: white;
+}
+

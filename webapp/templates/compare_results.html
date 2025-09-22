@@ -108,9 +108,25 @@
       <p><strong>RSI:</strong> {{ result.rsi_current }} ({{ result.rsi_status }})</p>
       <p><strong>Volatility:</strong> {{ result.volatility }}</p>
       <p><strong>Max Profit:</strong> ${{ result.max_profit }}</p>
+      <p><strong>Score:</strong> {{ result.score }}</p>
     </div>
   {% endfor %}
 </div>
+
+{% if recommended_ticker %}
+<div class="result-card highlight-card" style="margin-top: 2rem;">
+  <h3>🔍 Conclusion</h3>
+  <p>After analyzing performance, risk, and RSI indicators, <strong>{{ recommended_ticker }}</strong> stands out as the best stock.</p>
+  <p>🏆 It scored the highest overall (score: <strong>{{ best_score }}</strong>) among all compared stocks.</p>
+  <p>✅ Recommendation based on: {{ recommendation_reason }}.</p>
+</div>
+{% else %}
+<div class="result-card" style="margin-top: 2rem;">
+  <h3>🔍 Conclusion</h3>
+  <p>No clear winner found. Please review the stock data or adjust your criteria.</p>
+</div>
+{% endif %}
+
 
 <a href="{{ url_for('index') }}" class="btn btn-primary" style="margin-top: 2rem;">← Return to Home</a>
 {% endblock %}
