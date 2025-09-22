@@ -61,6 +61,7 @@ def web_interface():
         print("Starting web server...")
         print("Open: http://localhost:5000")
         print("Press Ctrl+C to stop the server")
+        #set use_reloader=True for development, False for production
         app.run(debug=True, use_reloader=False, host='0.0.0.0', port=5000)
     except ImportError as e:
         print(f"Web interface not available: {e}")
