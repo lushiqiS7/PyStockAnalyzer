@@ -61,7 +61,7 @@ def web_interface():
         print("Starting web server...")
         print("Open: http://localhost:5000")
         print("Press Ctrl+C to stop the server")
-        app.run(debug=True, host='0.0.0.0', port=5000)
+        app.run(debug=True, use_reloader=False, host='0.0.0.0', port=5000)
     except ImportError as e:
         print(f"Web interface not available: {e}")
         print("Make sure you have created the webapp directory and installed Flask")
