@@ -7,6 +7,7 @@ from calculations import calculate_sma, identify_runs, calculate_daily_returns, 
 from advanced_calculations import calculate_max_profit
 from visualizer import plot_stock_data, display_analysis_results
 import threading
+from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 
 class StockAnalyzerGUI:
     def __init__(self, root):
@@ -63,6 +64,12 @@ class StockAnalyzerGUI:
         # Matplotlib figure
         self.fig, self.ax = plt.subplots(figsize=(12, 6))
         self.canvas = FigureCanvasTkAgg(self.fig, chart_frame)
+
+        # Add Matplotlib navigation toolbar (zoom, pan, save, etc.)
+        from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
+        self.toolbar = NavigationToolbar2Tk(self.canvas, chart_frame)
+        self.toolbar.update()
+
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
         # Status bar
@@ -76,6 +83,11 @@ class StockAnalyzerGUI:
         main_frame.columnconfigure(0, weight=1)
         main_frame.rowconfigure(1, weight=1)
         main_frame.rowconfigure(2, weight=2)
+
+        # Add Matplotlib navigation toolbar for zoom/pan
+        self.toolbar = NavigationToolbar2Tk(self.canvas, chart_frame)
+        self.toolbar.update()
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
     def analyze_stock(self):
         """Handle stock analysis in a separate thread to prevent GUI freezing"""
@@ -184,26 +196,55 @@ class StockAnalyzerGUI:
     def _update_chart(self, data, sma, sma_window, upper_band, lower_band):
         """Update the matplotlib chart with technical indicators"""
         self.ax.clear()
-        
+    
         # Plot closing price
-        self.ax.plot(data.index, data['Close'], label='Closing Price', color='blue', alpha=0.7, linewidth=1.5)
-        
+        line_close, = self.ax.plot(data.index, data['Close'], label='Closing Price', color='blue', alpha=0.7, linewidth=1.5)
+    
         # Plot SMA
-        self.ax.plot(data.index, sma, label=f'SMA ({sma_window} days)', color='red', linewidth=2)
-        
+        line_sma, = self.ax.plot(data.index, sma, label=f'SMA ({sma_window} days)', color='red', linewidth=2)
+    
         # Plot Bollinger Bands
-        self.ax.plot(data.index, upper_band, label='Upper Bollinger Band', color='green', linestyle='--', alpha=0.7)
-        self.ax.plot(data.index, lower_band, label='Lower Bollinger Band', color='red', linestyle='--', alpha=0.7)
+        line_upper, = self.ax.plot(data.index, upper_band, label='Upper Bollinger Band', color='green', linestyle='--', alpha=0.7)
+        line_lower, = self.ax.plot(data.index, lower_band, label='Lower Bollinger Band', color='red', linestyle='--', alpha=0.7)
         self.ax.fill_between(data.index, lower_band, upper_band, alpha=0.1, color='gray', label='Bollinger Band Area')
-        
+    
         # Format chart
         self.ax.set_title(f'{self.ticker_var.get()} Price with Technical Indicators', fontsize=14, fontweight='bold')
         self.ax.set_xlabel('Date', fontweight='bold')
         self.ax.set_ylabel('Price ($)', fontweight='bold')
-        self.ax.legend()
+        self.ax.legend(fontsize=5, loc="best", framealpha=0.8)
         self.ax.grid(True, alpha=0.3)
         self.ax.tick_params(axis='x', rotation=45)
-        
+    
+        # Add hover annotation
+        annot = self.ax.annotate("", xy=(0,0), xytext=(20,20), textcoords="offset points", bbox=dict(boxstyle="round", fc="w"), arrowprops=dict(arrowstyle="->"))
+        annot.set_visible(False)
+    
+        # Function to update annotation
+        def update_annot(line, ind):
+            x, y = line.get_data()
+            annot.xy = (x[ind["ind"][0]], y[ind["ind"][0]])
+            text = f"{line.get_label()}\nDate: {x[ind['ind'][0]].date()}\nPrice: ${y[ind['ind'][0]]:.2f}"
+            annot.set_text(text)
+            annot.get_bbox_patch().set_alpha(0.8)
+    
+        # Hover event
+        def hover(event):
+            vis = annot.get_visible()
+            if event.inaxes == self.ax:
+                for line in [line_close, line_sma, line_upper, line_lower]:
+                    cont, ind = line.contains(event)
+                    if cont:
+                        update_annot(line, ind)
+                        annot.set_visible(True)
+                        self.canvas.draw_idle()
+                        return
+            if vis:
+                annot.set_visible(False)
+                self.canvas.draw_idle()
+    
+        self.fig.canvas.mpl_connect("motion_notify_event", hover)
+    
         # Update canvas
         self.fig.tight_layout()
         self.canvas.draw()
