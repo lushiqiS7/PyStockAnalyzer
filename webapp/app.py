@@ -1,9 +1,47 @@
-from flask import Flask, render_template, request, jsonify, Response
+
+from flask import Flask, render_template, request, jsonify, Response, render_template_string, redirect, url_for
 import sys
 import os
 from datetime import datetime
 import pandas as pd
-from flask.helpers import redirect, url_for
+
+# Add src directory to path to import your modules
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+app = Flask(__name__)
+
+@app.route('/api/stock_data')
+def api_stock_data():
+    """API endpoint to return latest stock data for a given ticker (for real-time updates)"""
+    if not ANALYSIS_AVAILABLE:
+        return jsonify({'error': 'Analysis modules not available'}), 503
+    ticker = request.args.get('ticker', 'AAPL').upper()
+    period = request.args.get('period', '6mo')
+    sma_window = int(request.args.get('sma_window', '10'))
+    try:
+        stock_data = fetch_stock_data(ticker, period)
+        if stock_data is None or stock_data.empty:
+            return jsonify({'error': 'No data available'}), 400
+        sma = calculate_sma(stock_data, sma_window)
+        rsi = calculate_rsi(stock_data, 14)
+        # Prepare data for chart
+        chart_data = {
+            'dates': [d.strftime('%Y-%m-%d') for d in stock_data.index],
+            'prices': stock_data['Close'].round(2).tolist(),
+            'sma': sma.round(2).where(pd.notnull(sma), None).tolist(),
+            'rsi': rsi.round(2).where(pd.notnull(rsi), None).tolist(),
+            'volume': stock_data['Volume'].astype(int).tolist(),
+            'current_price': round(stock_data['Close'].iloc[-1], 2)
+        }
+        return jsonify(chart_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+from flask import Flask, render_template, request, jsonify, Response, render_template_string, redirect, url_for
+import sys
+import os
+from datetime import datetime
+import pandas as pd
 
 # Add src directory to path to import your modules
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -12,23 +50,55 @@ try:
     from data_loader import fetch_stock_data
     from calculations import calculate_sma, identify_runs, calculate_daily_returns, calculate_rsi, calculate_bollinger_bands
     from advanced_calculations import calculate_max_profit
-    from compare_logic import do_compare_logic
+    from compare_logic import do_compare_logic, choose_best_stock, score_stock
     ANALYSIS_AVAILABLE = True
 except ImportError as e:
     print(f"Analysis modules not available: {e}")
     ANALYSIS_AVAILABLE = False
 
+
 app = Flask(__name__)
+
+# Place the API endpoint after app = Flask(__name__)
+@app.route('/api/stock_data')
+def api_stock_data():
+    """API endpoint to return latest stock data for a given ticker (for real-time updates)"""
+    if not ANALYSIS_AVAILABLE:
+        return jsonify({'error': 'Analysis modules not available'}), 503
+    ticker = request.args.get('ticker', 'AAPL').upper()
+    period = request.args.get('period', '6mo')
+    sma_window = int(request.args.get('sma_window', '10'))
+    try:
+        stock_data = fetch_stock_data(ticker, period)
+        if stock_data is None or stock_data.empty:
+            return jsonify({'error': 'No data available'}), 400
+        sma = calculate_sma(stock_data, sma_window)
+        rsi = calculate_rsi(stock_data, 14)
+        # Prepare data for chart
+        chart_data = {
+            'dates': [d.strftime('%Y-%m-%d') for d in stock_data.index],
+            'prices': stock_data['Close'].round(2).tolist(),
+            'sma': sma.round(2).where(pd.notnull(sma), None).tolist(),
+            'rsi': rsi.round(2).where(pd.notnull(rsi), None).tolist(),
+            'volume': stock_data['Volume'].astype(int).tolist(),
+            'current_price': round(stock_data['Close'].iloc[-1], 2)
+        }
+        return jsonify(chart_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/')
 def index():
     """Main page with stock analysis form"""
     return render_template('index.html', analysis_available=ANALYSIS_AVAILABLE)
 
+# Combined route to handle both single and compare modes
 @app.route('/analyze_or_compare', methods=['POST'])
 def analyze_or_compare():
     mode = request.form.get('mode', 'single')
-    tickers_raw = request.form.get('tickers', 'AAPL')
+    tickers_raw = request.form.get('tickers')
+    if not tickers_raw:
+        return "No tickers provided", 400
     tickers = [t.strip().upper() for t in tickers_raw.split(',') if t.strip()]
     period = request.form.get('period', '6mo')
     sma_window = int(request.form.get('sma_window', '10'))
@@ -37,13 +107,23 @@ def analyze_or_compare():
         # do compare logic
         all_results, all_charts = do_compare_logic(tickers, period, sma_window)
         analysis_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        return render_template('compare_results.html',
-                               all_results=all_results, all_charts=all_charts, period=period,  analysis_date=analysis_date)
+        best_stock = choose_best_stock(all_results)
+        recommended_ticker = best_stock["ticker"] if best_stock else None
+
+        return render_template(
+            'compare_results.html',
+            all_results=all_results,
+            all_charts=all_charts,
+            analysis_date=analysis_date,
+            recommendation_reason="best overall score across return, risk, and RSI indicators",
+            best_score=best_stock["score"] if best_stock else None,
+            recommended_ticker=recommended_ticker
+        )
     else:
         # assume single or fallback
-        return redirect(url_for('analyze_stock'), code=307)  # or call analyze logic directly
+        return analyze_stock()
     
-    
+ # Single stock analysis   
 @app.route('/analyze', methods=['POST'])
 def analyze_stock():
     """Analyze stock and return results"""
@@ -52,7 +132,9 @@ def analyze_stock():
     
     try:
         # Get and parse form input
-        tickers_input = request.form.get('ticker', 'AAPL')
+        tickers_input = request.form.get('tickers')
+        if not tickers_input:
+            return "No tickers provided", 400  # Or show an error page
         tickers = [t.strip().upper() for t in tickers_input.split(',')]
         period = request.form.get('period', '6mo')
         sma_window = int(request.form.get('sma_window', '10'))
@@ -176,6 +258,25 @@ def not_found(error):
 @app.errorhandler(500)
 def internal_error(error):
     return render_template('error.html', error="Internal server error"), 500
+
+@app.route('/refresh', methods=['POST'])
+def refresh_data():
+    """Refresh stock data and re-analyze"""
+    if not ANALYSIS_AVAILABLE:
+        return render_template('error.html', error="Analysis modules not available. Please check your installation.")
+    try:
+        tickers_input = request.form.get('tickers')
+        period = request.form.get('period', '6mo')
+        sma_window = int(request.form.get('sma_window', '10'))
+        # Reuse analyze_stock logic
+        # You can refactor analyze_stock to a helper function to avoid code duplication
+        request.form = request.form.copy()
+        request.form['tickers'] = tickers_input
+        request.form['period'] = period
+        request.form['sma_window'] = sma_window
+        return analyze_stock()
+    except Exception as e:
+        return render_template('error.html', error=f"Refresh error: {str(e)}")
 
 if __name__ == '__main__':
     print("Starting PyStock Analyzer Web Server...")

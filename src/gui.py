@@ -8,6 +8,10 @@ from advanced_calculations import calculate_max_profit
 from visualizer import plot_stock_data, display_analysis_results
 import threading
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
+import pandas as pd
+from tkinter import filedialog
+import sys
+import os
 
 class StockAnalyzerGUI:
     def __init__(self, root):
@@ -15,7 +19,8 @@ class StockAnalyzerGUI:
         self.root.title("PyStock Analyzer - Enhanced")
         self.root.geometry("1200x800")
         self.root.configure(bg='#f0f0f0')
-        
+        self.hover_cid = None  # <-- Add this line
+        self.annot = None      # <-- Add this line
         self.setup_gui()
         
     def setup_gui(self):
@@ -89,6 +94,9 @@ class StockAnalyzerGUI:
         self.toolbar.update()
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
+        # Bind window close event
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
     def analyze_stock(self):
         """Handle stock analysis in a separate thread to prevent GUI freezing"""
         self.analyze_btn.config(state='disabled')
@@ -113,6 +121,9 @@ class StockAnalyzerGUI:
             if stock_data is None:
                 messagebox.showerror("Error", f"Failed to fetch data for {ticker}")
                 return
+
+            # Store last analyzed data for export
+            self.last_stock_data = stock_data.copy()
             
             # Perform calculations
             self.status_var.set("Performing analysis...")
@@ -196,58 +207,75 @@ class StockAnalyzerGUI:
     def _update_chart(self, data, sma, sma_window, upper_band, lower_band):
         """Update the matplotlib chart with technical indicators"""
         self.ax.clear()
-    
+
         # Plot closing price
         line_close, = self.ax.plot(data.index, data['Close'], label='Closing Price', color='blue', alpha=0.7, linewidth=1.5)
-    
-        # Plot SMA
         line_sma, = self.ax.plot(data.index, sma, label=f'SMA ({sma_window} days)', color='red', linewidth=2)
-    
-        # Plot Bollinger Bands
         line_upper, = self.ax.plot(data.index, upper_band, label='Upper Bollinger Band', color='green', linestyle='--', alpha=0.7)
         line_lower, = self.ax.plot(data.index, lower_band, label='Lower Bollinger Band', color='red', linestyle='--', alpha=0.7)
         self.ax.fill_between(data.index, lower_band, upper_band, alpha=0.1, color='gray', label='Bollinger Band Area')
-    
-        # Format chart
+
         self.ax.set_title(f'{self.ticker_var.get()} Price with Technical Indicators', fontsize=14, fontweight='bold')
         self.ax.set_xlabel('Date', fontweight='bold')
         self.ax.set_ylabel('Price ($)', fontweight='bold')
         self.ax.legend(fontsize=5, loc="best", framealpha=0.8)
         self.ax.grid(True, alpha=0.3)
         self.ax.tick_params(axis='x', rotation=45)
-    
-        # Add hover annotation
-        annot = self.ax.annotate("", xy=(0,0), xytext=(20,20), textcoords="offset points", bbox=dict(boxstyle="round", fc="w"), arrowprops=dict(arrowstyle="->"))
-        annot.set_visible(False)
-    
-        # Function to update annotation
+
+        # --- Fix: Only create annotation and connect hover once ---
+        if self.annot is None:
+            self.annot = self.ax.annotate(
+                "", xy=(0,0), xytext=(20,20), textcoords="offset points",
+                bbox=dict(boxstyle="round", fc="w"), arrowprops=dict(arrowstyle="->")
+            )
+            self.annot.set_visible(False)
+
         def update_annot(line, ind):
             x, y = line.get_data()
-            annot.xy = (x[ind["ind"][0]], y[ind["ind"][0]])
+            self.annot.xy = (x[ind["ind"][0]], y[ind["ind"][0]])
             text = f"{line.get_label()}\nDate: {x[ind['ind'][0]].date()}\nPrice: ${y[ind['ind'][0]]:.2f}"
-            annot.set_text(text)
-            annot.get_bbox_patch().set_alpha(0.8)
-    
-        # Hover event
+            self.annot.set_text(text)
+            self.annot.get_bbox_patch().set_alpha(0.8)
+
         def hover(event):
-            vis = annot.get_visible()
+            vis = self.annot.get_visible()
             if event.inaxes == self.ax:
                 for line in [line_close, line_sma, line_upper, line_lower]:
                     cont, ind = line.contains(event)
                     if cont:
                         update_annot(line, ind)
-                        annot.set_visible(True)
+                        self.annot.set_visible(True)
                         self.canvas.draw_idle()
                         return
             if vis:
-                annot.set_visible(False)
+                self.annot.set_visible(False)
                 self.canvas.draw_idle()
-    
-        self.fig.canvas.mpl_connect("motion_notify_event", hover)
-    
-        # Update canvas
+
+        # Disconnect previous hover event if exists
+        if self.hover_cid is not None:
+            self.fig.canvas.mpl_disconnect(self.hover_cid)
+        self.hover_cid = self.fig.canvas.mpl_connect("motion_notify_event", hover)
+        # ---
+
         self.fig.tight_layout()
         self.canvas.draw()
+
+    def on_closing(self):
+        """Prompt to export data before closing"""
+        if hasattr(self, 'last_stock_data') and self.last_stock_data is not None:
+            if messagebox.askyesno("Export Data", "Do you want to export the last analyzed data before exiting?"):
+                file_path = filedialog.asksaveasfilename(
+                    defaultextension=".csv",
+                    filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
+                )
+                if file_path:
+                    try:
+                        self.last_stock_data.to_csv(file_path)
+                        messagebox.showinfo("Export Successful", f"Data exported to {file_path}")
+                    except Exception as e:
+                        messagebox.showerror("Export Failed", str(e))
+        self.root.destroy()
+        # os._exit(0)  # Removed to allow returning to main menu
 
 
 def main():

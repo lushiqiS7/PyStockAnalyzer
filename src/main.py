@@ -1,6 +1,7 @@
 from data_loader import fetch_stock_data
 from visualizer import plot_stock_data, display_analysis_results
 from advanced_calculations import run_validation_tests
+import sys
 
 
 def cli_interface():
@@ -46,6 +47,7 @@ def gui_interface():
     try:
         from gui import main as gui_main
         gui_main()
+        print("GUI closed. Returning to main menu...")
     except ImportError as e:
         print(f"GUI not available: {e}")
         print("Falling back to CLI interface...")
@@ -63,6 +65,8 @@ def web_interface():
         print("Press Ctrl+C to stop the server")
         #set use_reloader=True for development, False for production
         app.run(debug=True, use_reloader=False, host='0.0.0.0', port=5000)
+        print("\nWeb server stopped. Returning to main menu...")
+        main()  # Return to main menu after web server stops
     except ImportError as e:
         print(f"Web interface not available: {e}")
         print("Make sure you have created the webapp directory and installed Flask")
