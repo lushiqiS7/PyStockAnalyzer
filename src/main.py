@@ -14,44 +14,54 @@ def cli_interface():
     print("Running validation tests...")
     run_validation_tests()
     print()
-    
-    # Get user input
-    ticker = input("Enter stock ticker (e.g., AAPL, TSLA, MSFT): ").upper()
-    period = input("Enter time period (1y, 2y, 6mo, etc.) [default: 1y]: ") or "1y"
-    sma_window = int(input("Enter SMA window size [default: 5]: ") or "5")
-    
-    # Fetch data
-    print(f"\nFetching data for {ticker}...")
-    stock_data = fetch_stock_data(ticker, period)
-    
-    if stock_data is None:
-        print("Failed to fetch data. Please check your ticker symbol and internet connection.")
-        return
-    
-    # Display analysis results
-    display_analysis_results(stock_data, sma_window)
-    
-    # Generate plot
-    print("Generating visualization...")
-    plot_stock_data(stock_data, sma_window)
-    
-    # Save data option
-    save_csv = input("\nWould you like to save the data to CSV? (y/n): ").lower()
-    if save_csv == 'y':
-        filename = f"{ticker}_data.csv"
-        stock_data.to_csv(filename)
-        print(f"Data saved to {filename}")
+    try:
+        # Get user input
+        ticker = input("Enter stock ticker (e.g., AAPL, TSLA, MSFT): ").upper()
+        period = input("Enter time period (1y, 2y, 6mo, etc.) [default: 1y]: ") or "1y"
+        sma_window = int(input("Enter SMA window size [default: 5]: ") or "5")
+        
+        # Fetch data
+        print(f"\nFetching data for {ticker}...")
+        stock_data = fetch_stock_data(ticker, period)
+        
+        if stock_data is None:
+            print("Failed to fetch data. Please check your ticker symbol and internet connection.")
+            input("\nPress Enter to return to the main menu...")
+            return
+        
+        # Display analysis results
+        display_analysis_results(stock_data, sma_window)
+        
+        # Generate plot
+        print("Generating visualization...")
+        plot_stock_data(stock_data, sma_window)
+        
+        # Save data option
+        save_csv = input("\nWould you like to save the data to CSV? (y/n): ").lower()
+        if save_csv == 'y':
+            filename = f"{ticker}_data.csv"
+            stock_data.to_csv(filename)
+            print(f"Data saved to {filename}")
+    except Exception as e:
+        print(f"Error: {e}")
+    input("\nPress Enter to return to the main menu...")
+    return
 
 def gui_interface():
     """Graphical user interface"""
+    import subprocess
+    import sys
+    import os
     try:
-        from gui import main as gui_main
-        gui_main()
-        print("GUI closed. Returning to main menu...")
-    except ImportError as e:
-        print(f"GUI not available: {e}")
-        print("Falling back to CLI interface...")
-        cli_interface()
+        gui_path = os.path.join(os.path.dirname(__file__), 'gui.py')
+        # Use the same Python executable
+        subprocess.run([sys.executable, gui_path])
+        print("\nGUI window closed. Returning to main menu...")
+    except Exception as e:
+        print(f"An error occurred while launching the GUI: {e}")
+    # No extra input prompt here; return directly to menu
+    return
+    
 
 def web_interface():
     """Web interface"""
@@ -66,7 +76,6 @@ def web_interface():
         #set use_reloader=True for development, False for production
         app.run(debug=True, use_reloader=False, host='0.0.0.0', port=5000)
         print("\nWeb server stopped. Returning to main menu...")
-        main()  # Return to main menu after web server stops
     except ImportError as e:
         print(f"Web interface not available: {e}")
         print("Make sure you have created the webapp directory and installed Flask")
@@ -75,7 +84,8 @@ def web_interface():
         gui_interface()
     except KeyboardInterrupt:
         print("\nWeb server stopped. Returning to main menu...")
-        main()
+    input("\nPress Enter to return to the main menu...")
+    return
 
 def show_menu():
     """Display the main menu"""
@@ -94,19 +104,21 @@ def main():
     
     while True:
         show_menu()
-        
         choice = input("Enter your choice (1-5): ").strip()
-        
         if choice == "1":
             cli_interface()
+            continue
         elif choice == "2":
             gui_interface()
+            continue
         elif choice == "3":
             web_interface()
+            continue
         elif choice == "4":
             print("\nRunning validation tests...")
             run_validation_tests()
             input("\nPress Enter to continue...")
+            continue
         elif choice == "5":
             print("Thank you for using PyStock Analyzer!")
             print("Goodbye! 👋")
@@ -114,6 +126,7 @@ def main():
         else:
             print("Invalid choice. Please enter a number between 1-5.")
             input("Press Enter to continue...")
+            continue
 
 if __name__ == "__main__":
     main()

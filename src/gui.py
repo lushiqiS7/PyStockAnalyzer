@@ -27,32 +27,36 @@ class StockAnalyzerGUI:
         # Main frame
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        
+
         # Input section
         input_frame = ttk.LabelFrame(main_frame, text="Stock Data Input", padding="10")
         input_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
-        
+
         # Ticker input
         ttk.Label(input_frame, text="Stock Ticker:").grid(row=0, column=0, sticky=tk.W, padx=5)
         self.ticker_var = tk.StringVar(value="AAPL")
         ttk.Entry(input_frame, textvariable=self.ticker_var, width=10).grid(row=0, column=1, padx=5)
-        
+
         # Period selection
         ttk.Label(input_frame, text="Time Period:").grid(row=0, column=2, sticky=tk.W, padx=5)
         self.period_var = tk.StringVar(value="6mo")
         period_combo = ttk.Combobox(input_frame, textvariable=self.period_var, 
                                    values=["1mo", "3mo", "6mo", "1y", "2y"], width=8)
         period_combo.grid(row=0, column=3, padx=5)
-        
+
         # SMA window
         ttk.Label(input_frame, text="SMA Window:").grid(row=0, column=4, sticky=tk.W, padx=5)
         self.sma_var = tk.StringVar(value="10")
         ttk.Entry(input_frame, textvariable=self.sma_var, width=5).grid(row=0, column=5, padx=5)
-        
+
         # Analyze button
         self.analyze_btn = ttk.Button(input_frame, text="Analyze Stock", 
                                      command=self.analyze_stock)
         self.analyze_btn.grid(row=0, column=6, padx=10)
+
+        # Home button
+        self.home_btn = ttk.Button(input_frame, text="Home", command=self.on_home)
+        self.home_btn.grid(row=0, column=7, padx=10)
         
         # Results section
         results_frame = ttk.LabelFrame(main_frame, text="Analysis Results", padding="10")
@@ -260,24 +264,17 @@ class StockAnalyzerGUI:
         self.fig.tight_layout()
         self.canvas.draw()
 
+    def on_home(self):
+        """Handler for Home button: force quit and prompt user to rerun main menu"""
+        print("\nGUI closed. Press Enter in the terminal to rerun the main menu.")
+        import os
+        os._exit(0)
+
     def on_closing(self):
-        """Prompt to export data before closing"""
-        if hasattr(self, 'last_stock_data') and self.last_stock_data is not None:
-            if messagebox.askyesno("Export Data", "Do you want to export the last analyzed data before exiting?"):
-                file_path = filedialog.asksaveasfilename(
-                    defaultextension=".csv",
-                    filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
-                )
-                if file_path:
-                    try:
-                        self.last_stock_data.to_csv(file_path)
-                        messagebox.showinfo("Export Successful", f"Data exported to {file_path}")
-                    except Exception as e:
-                        messagebox.showerror("Export Failed", str(e))
-        self.root.destroy()
-        # os._exit(0)  # Removed to allow returning to main menu
-
-
+        """Force quit the GUI and prompt user to rerun main menu"""
+        print("\nGUI closed. Press Enter in the terminal to rerun the main menu.")
+        import os
+        os._exit(0)
 def main():
     """Main function to start the GUI application"""
     root = tk.Tk()

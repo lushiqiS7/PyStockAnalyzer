@@ -28,159 +28,159 @@
 
 
   {# Charts Script #}
-
   <script>
-    const chartData = {{ chart_data | tojson | safe }};
-    const ticker = '{{ results.ticker }}';
-    const period = '{{ results.period }}';
-    const smaWindow = '{{ results.sma_window }}';
+    
+      const chartData = {{ chart_data | tojson | safe }};
 
-    // Chart.js chart instances
-    let priceSmaChart, rsiChart, volumeChart;
+    const labels = chartData.dates;
+    const closingPrices = chartData.prices;
+    const smaValues = chartData.sma;
+    const rsiValues = chartData.rsi;
+    const volumeValues = chartData.volume;
 
-    function createCharts(data) {
-      // Price & SMA Chart
-      const ctxPriceSma = document.getElementById('priceSmaChart').getContext('2d');
-      priceSmaChart = new Chart(ctxPriceSma, {
-        type: 'line',
-        data: {
-          labels: data.dates,
-          datasets: [
-            {
-              label: 'Closing Price',
-              data: data.prices,
-              borderColor: 'blue',
-              backgroundColor: 'rgba(0, 0, 255, 0.1)',
-              fill: false,
-              tension: 0.1
-            },
-            {
-              label: `SMA (${smaWindow})`,
-              data: data.sma,
-              borderColor: 'red',
-              backgroundColor: 'rgba(255, 0, 0, 0.1)',
-              fill: false,
-              tension: 0.1
-            }
-          ]
-        },
-        options: {
-          scales: {
-            x: {
-              ticks: { color: 'white' },
-              grid: { color: 'rgba(255, 255, 255, 0.1)' }
-            },
-            y: {
-              ticks: { color: 'white' },
-              grid: { color: 'rgba(255, 255, 255, 0.1)' }
-            }
-          },
-          plugins: {
-            legend: { labels: { color: 'white' } }
-          }
-        }
-      });
 
-      // RSI Chart
-      const ctxRsi = document.getElementById('rsiChart').getContext('2d');
-      rsiChart = new Chart(ctxRsi, {
-        type: 'line',
-        data: {
-          labels: data.dates,
-          datasets: [{
-            label: 'RSI (14)',
-            data: data.rsi,
-            borderColor: 'purple',
-            backgroundColor: 'rgba(128, 0, 128, 0.1)',
+    {# Price & SMA Chart #} 
+    const ctxPriceSma = document.getElementById('priceSmaChart').getContext('2d');
+    new Chart(ctxPriceSma, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Closing Price',
+            data: closingPrices,
+            borderColor: 'blue',
+            backgroundColor: 'rgba(0, 0, 255, 0.1)',
             fill: false,
             tension: 0.1
-          }]
-        },
-        options: {
-          scales: {
-            x: {
-              ticks: { color: 'white' },
-              grid: { color: 'rgba(255, 255, 255, 0.1)' }
-            },
-            y: {
-              ticks: { color: 'white' },
-              grid: { color: 'rgba(255, 255, 255, 0.1)' }
-            }
           },
-          plugins: {
-            legend: { labels: { color: 'white' } }
+          {
+            label: `SMA ({{ results.sma_window }})`,
+            data: smaValues,
+            borderColor: 'red',
+            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+            fill: false,
+            tension: 0.1
           }
-        }
-      });
-
-      // Volume Chart
-      const ctxVolume = document.getElementById('volumeChart').getContext('2d');
-      volumeChart = new Chart(ctxVolume, {
-        type: 'bar',
-        data: {
-          labels: data.dates,
-          datasets: [{
-            label: 'Volume',
-            data: data.volume,
-            backgroundColor: 'orange',
-            borderWidth: 1
-          }]
+        ]
+      },
+      options: {
+    scales: {
+      x: {
+        ticks: {
+          color: 'white'   // X-axis tick labels
         },
-        options: {
-          scales: {
-            x: {
-              ticks: { color: 'white' },
-              grid: { color: 'rgba(255, 255, 255, 0.1)' }
-            },
-            y: {
-              ticks: { color: 'white' },
-              grid: { color: 'rgba(255, 255, 255, 0.1)' }
-            }
-          },
-          plugins: {
-            legend: { labels: { color: 'white' } }
-          }
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)' // Optional: light grid lines
         }
-      });
+      },
+      y: {
+        ticks: {
+          color: 'white'   // Y-axis tick labels
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        labels: {
+          color: 'white'   // Legend label color
+        }
+      }
     }
+  }
 
-    function updateCharts(data) {
-      // Update Price & SMA Chart
-      priceSmaChart.data.labels = data.dates;
-      priceSmaChart.data.datasets[0].data = data.prices;
-      priceSmaChart.data.datasets[1].data = data.sma;
-      priceSmaChart.update();
+    });
 
-      // Update RSI Chart
-      rsiChart.data.labels = data.dates;
-      rsiChart.data.datasets[0].data = data.rsi;
-      rsiChart.update();
-
-      // Update Volume Chart
-      volumeChart.data.labels = data.dates;
-      volumeChart.data.datasets[0].data = data.volume;
-      volumeChart.update();
+    {# RSI Chart #}
+    const ctxRsi = document.getElementById('rsiChart').getContext('2d');
+    new Chart(ctxRsi, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'RSI (14)',
+          data: rsiValues,
+          borderColor: 'purple',
+          backgroundColor: 'rgba(128, 0, 128, 0.1)',
+          fill: false,
+          tension: 0.1
+        }]
+      },
+      options: {
+    scales: {
+      x: {
+        ticks: {
+          color: 'white'   // X-axis tick labels
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)' // Optional: light grid lines
+        }
+      },
+      y: {
+        ticks: {
+          color: 'white'   // Y-axis tick labels
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        labels: {
+          color: 'white'   // Legend label color
+        }
+      }
     }
+  }
 
-    // Initial chart creation
-    createCharts(chartData);
+    });
 
-    // Polling function for real-time updates
-    function fetchAndUpdate() {
-      fetch(`/api/stock_data?ticker=${ticker}&period=${period}&sma_window=${smaWindow}`)
-        .then(response => response.json())
-        .then(data => {
-          if (!data.error) {
-            updateCharts(data);
-          }
-        })
-        .catch(err => {
-          // Optionally handle error
-        });
+    {# Volume Chart #}
+    const ctxVolume = document.getElementById('volumeChart').getContext('2d');
+    new Chart(ctxVolume, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Volume',
+          data: volumeValues,
+          backgroundColor: 'orange',
+          borderWidth: 1
+        }]
+      },
+      options: {
+    scales: {
+      x: {
+        ticks: {
+          color: 'white'   // X-axis tick labels
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)' // Optional: light grid lines
+        }
+      },
+      y: {
+        ticks: {
+          color: 'white'   // Y-axis tick labels
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        labels: {
+          color: 'white'   // Legend label color
+        }
+      }
     }
+  }
 
-    // Update every 10 seconds (10000 ms)
-    setInterval(fetchAndUpdate, 10000);
+    });
   </script>
 
   {# Key Insights Section #}

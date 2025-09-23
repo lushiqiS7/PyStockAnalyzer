@@ -16,17 +16,23 @@ def api_stock_data():
     if not ANALYSIS_AVAILABLE:
         return jsonify({'error': 'Analysis modules not available'}), 503
     ticker = request.args.get('ticker', 'AAPL').upper()
-    period = request.args.get('period', '6mo')
+    period = request.args.get('period', '5d')  # default to 5d for intraday
     sma_window = int(request.args.get('sma_window', '10'))
+    interval = request.args.get('interval', '1m')  # default to 1m for real-time
     try:
-        stock_data = fetch_stock_data(ticker, period)
+        stock_data = fetch_stock_data(ticker, period, interval)
         if stock_data is None or stock_data.empty:
             return jsonify({'error': 'No data available'}), 400
+        # Format x-axis labels for intraday vs daily
+        if interval.endswith('m') or interval.endswith('h'):
+            date_labels = [d.strftime('%Y-%m-%d %H:%M') for d in stock_data.index]
+        else:
+            date_labels = [d.strftime('%Y-%m-%d') for d in stock_data.index]
         sma = calculate_sma(stock_data, sma_window)
         rsi = calculate_rsi(stock_data, 14)
         # Prepare data for chart
         chart_data = {
-            'dates': [d.strftime('%Y-%m-%d') for d in stock_data.index],
+            'dates': date_labels,
             'prices': stock_data['Close'].round(2).tolist(),
             'sma': sma.round(2).where(pd.notnull(sma), None).tolist(),
             'rsi': rsi.round(2).where(pd.notnull(rsi), None).tolist(),
