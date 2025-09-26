@@ -54,7 +54,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 try:
     from data_loader import fetch_stock_data
-    from calculations import calculate_sma, identify_runs, calculate_daily_returns, calculate_rsi, calculate_bollinger_bands
+    from calculations import calculate_sma, identify_runs, calculate_daily_returns, calculate_rsi, calculate_bollinger_bands, identify_run_periods
     from advanced_calculations import calculate_max_profit
     from compare_logic import do_compare_logic, choose_best_stock, score_stock
     ANALYSIS_AVAILABLE = True
@@ -197,13 +197,28 @@ def analyze_stock():
             
         all_results.append(results)  
         
+        # Get run periods for highlighting
+        run_periods = identify_run_periods(stock_data)
+        
+        # Format run periods for chart visualization
+        run_highlights = []
+        for run in run_periods:
+            if run['length'] >= 2:  # Only highlight runs of 2+ days
+                run_highlights.append({
+                    'start': run['start_date'].strftime('%Y-%m-%d'),
+                    'end': run['end_date'].strftime('%Y-%m-%d'),
+                    'direction': 'up' if run['direction'] == 1 else 'down',
+                    'length': run['length']
+                })
+        
         # Chart data per ticker
         all_charts[ticker] = {
                 'dates': [d.strftime('%Y-%m-%d') for d in stock_data.index],
                 'prices': stock_data['Close'].round(2).tolist(),
                 'sma': sma.round(2).where(pd.notnull(sma), None).tolist(),
                 'rsi': rsi.round(2).where(pd.notnull(rsi), None).tolist(),
-                'volume': stock_data['Volume'].astype(int).tolist()
+                'volume': stock_data['Volume'].astype(int).tolist(),
+                'runs': run_highlights
             }
 
         #prepare data for charts
@@ -212,7 +227,8 @@ def analyze_stock():
         'prices': stock_data['Close'].round(2).tolist(),
         'sma': calculate_sma(stock_data, sma_window).round(2).where(pd.notnull(calculate_sma(stock_data, sma_window)), None).tolist(),
         'rsi': calculate_rsi(stock_data, 14).round(2).where(pd.notnull(calculate_rsi(stock_data, 14)), None).tolist(),
-        'volume': stock_data['Volume'].astype(int).tolist()
+        'volume': stock_data['Volume'].astype(int).tolist(),
+        'runs': run_highlights
 
     }
         # Pass both results and chart_data to template

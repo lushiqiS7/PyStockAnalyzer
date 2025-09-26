@@ -11,7 +11,7 @@
 
   {# Charts Section #}
   <div class="chart-container" style="width: 90%; max-width: 900px; margin: 2rem auto;">
-    <h3>📈 Price & SMA Chart</h3>
+    <h3>📈 Price & SMA Chart with Run Highlighting</h3>
     <canvas id="priceSmaChart"></canvas>
   </div>
 
@@ -37,7 +37,34 @@
     const smaValues = chartData.sma;
     const rsiValues = chartData.rsi;
     const volumeValues = chartData.volume;
+    const runHighlights = chartData.runs || [];
 
+    // Function to create background data for run highlighting
+    function createRunBackgroundData(dates, prices, runs) {
+      const backgroundData = dates.map(() => null);
+      
+      runs.forEach(run => {
+        const startIdx = dates.indexOf(run.start);
+        const endIdx = dates.indexOf(run.end);
+        
+        if (startIdx !== -1 && endIdx !== -1) {
+          // Get the min and max price in this period for background height
+          const periodPrices = prices.slice(startIdx, endIdx + 1).filter(p => p !== null);
+          const minPrice = Math.min(...periodPrices);
+          const maxPrice = Math.max(...periodPrices);
+          
+          for (let i = startIdx; i <= endIdx; i++) {
+            backgroundData[i] = maxPrice * 1.02; // Slightly above max price
+          }
+        }
+      });
+      
+      return backgroundData;
+    }
+
+    // Create datasets for run highlighting
+    const upRunData = createRunBackgroundData(labels, closingPrices, runHighlights.filter(run => run.direction === 'up'));
+    const downRunData = createRunBackgroundData(labels, closingPrices, runHighlights.filter(run => run.direction === 'down'));
 
     {# Price & SMA Chart #} 
     const ctxPriceSma = document.getElementById('priceSmaChart').getContext('2d');
@@ -47,12 +74,31 @@
         labels: labels,
         datasets: [
           {
+            label: 'Upward Runs',
+            data: upRunData,
+            type: 'bar',
+            backgroundColor: 'rgba(0, 255, 0, 0.2)',
+            borderColor: 'transparent',
+            order: 3,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Downward Runs',
+            data: downRunData,
+            type: 'bar',
+            backgroundColor: 'rgba(255, 0, 0, 0.2)',
+            borderColor: 'transparent',
+            order: 3,
+            yAxisID: 'y'
+          },
+          {
             label: 'Closing Price',
             data: closingPrices,
             borderColor: 'blue',
             backgroundColor: 'rgba(0, 0, 255, 0.1)',
             fill: false,
-            tension: 0.1
+            tension: 0.1,
+            order: 1
           },
           {
             label: `SMA ({{ results.sma_window }})`,
@@ -60,7 +106,8 @@
             borderColor: 'red',
             backgroundColor: 'rgba(255, 0, 0, 0.1)',
             fill: false,
-            tension: 0.1
+            tension: 0.1,
+            order: 2
           }
         ]
       },
