@@ -1,6 +1,6 @@
 import pandas as pd
 from data_loader import fetch_stock_data
-from calculations import calculate_sma, calculate_rsi
+from calculations import calculate_sma, calculate_rsi, identify_run_periods
 from advanced_calculations import calculate_max_profit
 
 #Comparison for multiple stocks
@@ -52,6 +52,20 @@ def do_compare_logic(tickers, period='6mo', sma_window=10):
             'max_profit': round(max_profit, 2) if max_profit is not None else None,
         })
 
+        # Get run periods for highlighting
+        run_periods = identify_run_periods(stock_data)
+        
+        # Format run periods for chart visualization
+        run_highlights = []
+        for run in run_periods:
+            if run['length'] >= 2:  # Only highlight runs of 2+ days
+                run_highlights.append({
+                    'start': run['start_date'].strftime('%Y-%m-%d'),
+                    'end': run['end_date'].strftime('%Y-%m-%d'),
+                    'direction': 'up' if run['direction'] == 1 else 'down',
+                    'length': run['length']
+                })
+
         #Chart data
         all_charts[ticker] = {
             'dates': [d.strftime('%Y-%m-%d') for d in stock_data.index],
@@ -59,6 +73,7 @@ def do_compare_logic(tickers, period='6mo', sma_window=10):
             'sma': sma.round(2).where(pd.notnull(sma), None).tolist(),
             'rsi': rsi.round(2).where(pd.notnull(rsi), None).tolist(),
             'volume': stock_data['Volume'].astype(int).tolist(),
+            'runs': run_highlights
         }
 
     return all_results_list, all_charts

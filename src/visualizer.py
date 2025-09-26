@@ -1,16 +1,40 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from calculations import calculate_sma, calculate_rsi, calculate_bollinger_bands
+from calculations import calculate_sma, calculate_rsi, calculate_bollinger_bands, identify_run_periods
 
 def plot_stock_data(df, sma_window=5):
     """
-    Enhanced plotting with RSI and Bollinger Bands subplots
+    Enhanced plotting with RSI, Bollinger Bands subplots, and run highlighting
     """
     # Create figure with subplots
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 10))
     
+    # Get run periods for highlighting
+    run_periods = identify_run_periods(df)
+    
     # Plot 1: Price with SMA and Bollinger Bands
     ax1.plot(df.index, df['Close'], label='Closing Price', color='blue', alpha=0.7)
+    
+    # Highlight upward and downward runs
+    upward_run_labeled = False
+    downward_run_labeled = False
+    
+    for run in run_periods:
+        start_date = run['start_date']
+        end_date = run['end_date']
+        direction = run['direction']
+        length = run['length']
+        
+        # Only highlight runs of 2 or more days to avoid clutter
+        if length >= 2:
+            if direction == 1:  # Upward run
+                label = 'Upward Run' if not upward_run_labeled else ""
+                ax1.axvspan(start_date, end_date, alpha=0.2, color='green', label=label)
+                upward_run_labeled = True
+            elif direction == -1:  # Downward run
+                label = 'Downward Run' if not downward_run_labeled else ""
+                ax1.axvspan(start_date, end_date, alpha=0.2, color='red', label=label)
+                downward_run_labeled = True
     
     # Calculate and plot SMA
     sma = calculate_sma(df, sma_window)
@@ -22,7 +46,7 @@ def plot_stock_data(df, sma_window=5):
     ax1.plot(df.index, lower_band, label='Lower Bollinger Band', color='red', linestyle='--', alpha=0.7)
     ax1.fill_between(df.index, lower_band, upper_band, alpha=0.1, color='gray')
     
-    ax1.set_title('Stock Price with Technical Indicators')
+    ax1.set_title('Stock Price with Technical Indicators and Run Highlighting')
     ax1.set_ylabel('Price ($)')
     ax1.legend()
     ax1.grid(True, alpha=0.3)

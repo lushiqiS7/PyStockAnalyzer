@@ -69,7 +69,7 @@ def web_interface():
         import sys
         import os
         sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'webapp'))
-        from app import app
+        from app import app # type: ignore
         print("Starting web server...")
         print("Open: http://localhost:5000")
         print("Press Ctrl+C to stop the server")

@@ -3,7 +3,7 @@ from tkinter import ttk, messagebox, scrolledtext
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from data_loader import fetch_stock_data
-from calculations import calculate_sma, identify_runs, calculate_daily_returns, calculate_rsi, calculate_bollinger_bands
+from calculations import calculate_sma, identify_runs, calculate_daily_returns, calculate_rsi, calculate_bollinger_bands, identify_run_periods
 from advanced_calculations import calculate_max_profit
 from visualizer import plot_stock_data, display_analysis_results
 import threading
@@ -209,8 +209,32 @@ class StockAnalyzerGUI:
         self.results_text.insert(1.0, text)
         
     def _update_chart(self, data, sma, sma_window, upper_band, lower_band):
-        """Update the matplotlib chart with technical indicators"""
+        """Update the matplotlib chart with technical indicators and run highlighting"""
         self.ax.clear()
+
+        # Get run periods for highlighting
+        run_periods = identify_run_periods(data)
+        
+        # Highlight upward and downward runs
+        upward_run_labeled = False
+        downward_run_labeled = False
+        
+        for run in run_periods:
+            start_date = run['start_date']
+            end_date = run['end_date']
+            direction = run['direction']
+            length = run['length']
+            
+            # Only highlight runs of 2 or more days to avoid clutter
+            if length >= 2:
+                if direction == 1:  # Upward run
+                    label = 'Upward Run' if not upward_run_labeled else ""
+                    self.ax.axvspan(start_date, end_date, alpha=0.2, color='green', label=label)
+                    upward_run_labeled = True
+                elif direction == -1:  # Downward run
+                    label = 'Downward Run' if not downward_run_labeled else ""
+                    self.ax.axvspan(start_date, end_date, alpha=0.2, color='red', label=label)
+                    downward_run_labeled = True
 
         # Plot closing price
         line_close, = self.ax.plot(data.index, data['Close'], label='Closing Price', color='blue', alpha=0.7, linewidth=1.5)
@@ -219,7 +243,7 @@ class StockAnalyzerGUI:
         line_lower, = self.ax.plot(data.index, lower_band, label='Lower Bollinger Band', color='red', linestyle='--', alpha=0.7)
         self.ax.fill_between(data.index, lower_band, upper_band, alpha=0.1, color='gray', label='Bollinger Band Area')
 
-        self.ax.set_title(f'{self.ticker_var.get()} Price with Technical Indicators', fontsize=14, fontweight='bold')
+        self.ax.set_title(f'{self.ticker_var.get()} Price with Technical Indicators and Run Highlighting', fontsize=14, fontweight='bold')
         self.ax.set_xlabel('Date', fontweight='bold')
         self.ax.set_ylabel('Price ($)', fontweight='bold')
         self.ax.legend(fontsize=5, loc="best", framealpha=0.8)

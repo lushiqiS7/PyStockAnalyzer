@@ -36,6 +36,47 @@ def identify_runs(df):
         'longest_down_streak': max(down_streaks) if down_streaks else 0
     }
 
+def identify_run_periods(df):
+    """
+    Identify run periods with their start and end dates for visualization highlighting
+    """
+    # Calculate daily price changes
+    price_changes = df['Close'].diff()
+    
+    # Identify upward (1) and downward (-1) days. 0 means no change.
+    directions = np.sign(price_changes).fillna(0).astype(int)
+    
+    # Find where the direction changes
+    change_points = (directions != directions.shift(1))
+    streak_ids = change_points.cumsum()
+    
+    # Create a DataFrame to track runs
+    run_data = pd.DataFrame({
+        'direction': directions,
+        'streak_id': streak_ids
+    }, index=df.index)
+    
+    # Group by streak_id to get run periods
+    run_periods = []
+    for streak_id in run_data['streak_id'].unique():
+        streak_data = run_data[run_data['streak_id'] == streak_id]
+        direction = streak_data['direction'].iloc[0]
+        
+        # Skip periods with no direction (direction = 0)
+        if direction != 0:
+            start_date = streak_data.index[0]
+            end_date = streak_data.index[-1]
+            length = len(streak_data)
+            
+            run_periods.append({
+                'start_date': start_date,
+                'end_date': end_date,
+                'direction': direction,  # 1 for up, -1 for down
+                'length': length
+            })
+    
+    return run_periods
+
 def calculate_daily_returns(df):
   
     # Calculate daily returns: (Today's Close - Yesterday's Close) / Yesterday's Close

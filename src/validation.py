@@ -1,7 +1,76 @@
 import pandas as pd
 import numpy as np
-from calculations import calculate_sma, identify_runs, calculate_daily_returns, calculate_rsi, calculate_bollinger_bands
+import sys
+import os
+from calculations import calculate_sma, identify_runs, calculate_daily_returns, calculate_rsi, calculate_bollinger_bands, identify_run_periods
 from advanced_calculations import calculate_max_profit
+
+def test_gui_imports():
+    """Test that GUI can import the new function"""
+    try:
+        from gui import StockAnalyzerGUI
+        print("✅ GUI imports successful - run highlighting should work")
+        
+        # Test the identify_run_periods function with sample data
+        # Create sample stock data
+        dates = pd.date_range(start='2024-01-01', periods=10, freq='D')
+        prices = [100, 102, 101, 103, 105, 104, 102, 100, 98, 99]  # Mix of up/down moves
+        sample_data = pd.DataFrame({
+            'Close': prices
+        }, index=dates)
+        
+        run_periods = identify_run_periods(sample_data)
+        print(f"✅ Found {len(run_periods)} run periods in sample data")
+        
+        for i, run in enumerate(run_periods):
+            direction = "Upward" if run['direction'] == 1 else "Downward" if run['direction'] == -1 else "Flat"
+            print(f"   Run {i+1}: {direction} from {run['start_date'].date()} to {run['end_date'].date()} ({run['length']} days)")
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ GUI imports failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+def test_web_imports():
+    """Test that web app can import the new function"""
+    try:
+        # Add webapp directory to path
+        webapp_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'webapp')
+        sys.path.append(webapp_path)
+        import app as app_module
+        
+        print("✅ Web app imports successful - run highlighting should work")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Web app imports failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+def test_run_highlighting_functionality():
+    """Test the enhanced run highlighting functionality"""
+    print("=" * 60)
+    print("TESTING ENHANCED RUN HIGHLIGHTING FUNCTIONALITY")
+    print("=" * 60)
+    
+    gui_ok = test_gui_imports()
+    print()
+    web_ok = test_web_imports()
+    
+    print("=" * 60)
+    if gui_ok and web_ok:
+        print("✅ All enhanced interface tests passed! Run highlighting should work in both GUI and web interfaces.")
+        print("\nTo test:")
+        print("- GUI: Run 'python src/main.py' and select GUI mode")  
+        print("- Web: Run 'python webapp/app.py' and visit http://localhost:5000")
+    else:
+        print("❌ Some enhanced interface tests failed. Check the errors above.")
+    
+    return gui_ok and web_ok
 
 def run_comprehensive_validation():
     """Run comprehensive validation of all core functionalities."""
@@ -118,6 +187,11 @@ def run_comprehensive_validation():
     print("ENHANCED VALIDATION COMPLETE")
     print("=" * 60)
 
+def run_all_validations():
+    """Run all validation tests including enhanced functionality tests"""
+    run_comprehensive_validation()
+    print("\n")
+    test_run_highlighting_functionality()
 
 if __name__ == "__main__":
-    run_comprehensive_validation()
+    run_all_validations()
