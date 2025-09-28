@@ -344,15 +344,17 @@
   <a href="{{ url_for('export_results', ticker=results.ticker, period=results.period, sma_window=results.sma_window) }}" class="btn btn-secondary" download>
       📥 Export Results as CSV
   </a>
-
+  
+  
+  <form method="POST" action="{{ url_for('refresh_data') }}" style="display: inline;">
+      <input type="hidden" name="tickers" value="{{ results['ticker'] }}">
+      <input type="hidden" name="period" value="{{ results['period'] }}">
+      <input type="hidden" name="sma_window" value="{{ results['sma_window'] }}">
+      <button type="submit">🔄 Refresh Data</button>
+</form>
   </div>
 
   
-<form method="POST" action="{{ url_for('refresh_data') }}">
-    <input type="hidden" name="tickers" value="{{ results['ticker'] }}">
-    <input type="hidden" name="period" value="{{ results['period'] }}">
-    <input type="hidden" name="sma_window" value="{{ results['sma_window'] }}">
-    <button type="submit" class="btn btn-primary">Refresh Data</button>
-</form>
+
 
   {% endblock %}
