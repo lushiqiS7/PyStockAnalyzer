@@ -210,7 +210,14 @@ class StockAnalyzerGUI:
         
     def _update_chart(self, data, sma, sma_window, upper_band, lower_band):
         """Update the matplotlib chart with technical indicators and run highlighting"""
+        # Disconnect previous hover event if exists
+        if self.hover_cid is not None:
+            self.fig.canvas.mpl_disconnect(self.hover_cid)
+            self.hover_cid = None
+        
+        # Clear the axis and reset annotation
         self.ax.clear()
+        self.annot = None  # Reset annotation object
 
         # Get run periods for highlighting
         run_periods = identify_run_periods(data)
@@ -250,13 +257,12 @@ class StockAnalyzerGUI:
         self.ax.grid(True, alpha=0.3)
         self.ax.tick_params(axis='x', rotation=45)
 
-        # --- Fix: Only create annotation and connect hover once ---
-        if self.annot is None:
-            self.annot = self.ax.annotate(
-                "", xy=(0,0), xytext=(20,20), textcoords="offset points",
-                bbox=dict(boxstyle="round", fc="w"), arrowprops=dict(arrowstyle="->")
-            )
-            self.annot.set_visible(False)
+        # Create new annotation for this chart
+        self.annot = self.ax.annotate(
+            "", xy=(0,0), xytext=(20,20), textcoords="offset points",
+            bbox=dict(boxstyle="round", fc="w"), arrowprops=dict(arrowstyle="->")
+        )
+        self.annot.set_visible(False)
 
         def update_annot(line, ind):
             x, y = line.get_data()
@@ -266,6 +272,8 @@ class StockAnalyzerGUI:
             self.annot.get_bbox_patch().set_alpha(0.8)
 
         def hover(event):
+            if self.annot is None:  # Safety check
+                return
             vis = self.annot.get_visible()
             if event.inaxes == self.ax:
                 for line in [line_close, line_sma, line_upper, line_lower]:
@@ -279,11 +287,8 @@ class StockAnalyzerGUI:
                 self.annot.set_visible(False)
                 self.canvas.draw_idle()
 
-        # Disconnect previous hover event if exists
-        if self.hover_cid is not None:
-            self.fig.canvas.mpl_disconnect(self.hover_cid)
+        # Connect new hover event
         self.hover_cid = self.fig.canvas.mpl_connect("motion_notify_event", hover)
-        # ---
 
         self.fig.tight_layout()
         self.canvas.draw()
