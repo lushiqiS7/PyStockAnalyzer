@@ -4,7 +4,7 @@ A comprehensive stock market analysis tool with multiple interfaces, providing p
 
 #🚀 Project Overview
 
-PyStock Analyzer is a full-featured Python application that performs advanced stock market technical analysis. It features three different user interfaces and implements all required functionalities from the INF1002 project specification.
+PyStock Analyzer is a multi-featured Python application that performs advanced stock market technical analysis. It features three different user interfaces and implements all required functionalities from the INF1002 project specification.
 
 📁 Complete Project Structure
 
@@ -16,6 +16,8 @@ PyStockAnalyzer/
 ├── src/                       # Core analysis source code
 
 │   ├── advanced_calculations.py # Advanced algorithms & validation
+
+│   ├── compare_logic.py # compare data between stock tickers
 
 │   ├── calculations.py        # Core financial calculations
 
@@ -46,6 +48,8 @@ PyStockAnalyzer/
 │   │   ├── index.html        # Main form page
 
 │   │   └── results.html      # Results display
+
+│   │   ├── compare_results.html      # Data comparison display  
 
 │   └── app.py               # Flask application
 
@@ -78,6 +82,8 @@ Relative Strength Index (RSI) - Overbought/oversold detection
 Bollinger Bands - Volatility measurement
 
 Multiple Timeframes - 1mo to 2y analysis periods
+
+Stock Comparison - allows users to compare different stock tickers to determine best buy
 
 🎯 Three Interface Modes
 
@@ -133,6 +139,18 @@ calculate_rsi() - Relative Strength Index
 
 calculate_bollinger_bands() - Volatility bands
 
+src/compare_logic.py
+
+Purpose: Compare the data of stock tickers to determine the best ticker to buy
+
+Key Functions:
+
+do_compare_logic() - takes data from data_loader and display on charts
+
+score_stock(result) - Scoring system that uses the result from do_compare_logic to calculate the score based on several factors (e.g. RSI Status, Max Profit)
+
+choose_best_stock(all_results) - uses the scoring system to choose the best stock ticker
+
 src/advanced_calculations.py
 
 Purpose: Advanced algorithms and validation
@@ -186,6 +204,10 @@ webapp/templates/results.html
 Purpose: Analysis results display
 
 Features: Formatted results, color-coded indicators, action buttons
+
+webapp/templates/compare_results.html
+
+Features: data comparison between stock tickers and display the best choice
 
 webapp/templates/error.html
 
@@ -344,4 +366,5 @@ CI/CD pipeline
 Performance optimization
 
 # 📝 License
+
 This project is developed for educational purposes as part of the INF1002 Programming Fundamentals course at Singapore Institute of Technology.
