@@ -11,56 +11,13 @@ import numpy as np
 
 
 def calculate_sma(df, window=5):
-    """
-    Calculate Simple Moving Average (SMA) for stock data.
-    
-    The Simple Moving Average is calculated by taking the arithmetic mean
-    of a given set of closing prices over a specific number of periods.
-    
-    Args:
-        df (pandas.DataFrame): DataFrame containing stock data with a 'Close' column.
-        window (int, optional): Number of periods to include in the moving average.
-                               Defaults to 5.
-    
-    Returns:
-        pandas.Series: Series containing the SMA values. The first (window-1)
-                      values will be NaN since there's insufficient data.
-                      
-    Example:
-        >>> data = pd.DataFrame({'Close': [10, 12, 14, 16, 18]})
-        >>> sma = calculate_sma(data, window=3)
-        >>> print(sma.tolist())
-        [nan, nan, 12.0, 14.0, 16.0]
-    """
+
     # Calculate SMA using the rolling mean of the 'Close' column
     sma = df['Close'].rolling(window=window).mean()
     return sma
 
 def identify_runs(df):
-    """
-    Identify and analyze consecutive runs of upward and downward price movements.
-    
-    A "run" is defined as a sequence of consecutive days where the stock price
-    moves in the same direction (either up or down). This function analyzes
-    these patterns to provide insights into trending behavior.
-    
-    Args:
-        df (pandas.DataFrame): DataFrame containing stock data with a 'Close' column.
-                              Must have a proper date index for accurate analysis.
-    
-    Returns:
-        dict: Dictionary containing run analysis with the following keys:
-            - 'up_streaks' (list): Lengths of all upward runs
-            - 'down_streaks' (list): Lengths of all downward runs  
-            - 'total_up_days' (int): Total number of days in upward trends
-            - 'total_down_days' (int): Total number of days in downward trends
-            - 'longest_up_streak' (int): Length of the longest upward run
-            - 'longest_down_streak' (int): Length of the longest downward run
-            
-    Example:
-        If prices move: 100 -> 102 -> 104 -> 103 -> 101 -> 103
-        This creates: up, up, down, down, up (2-day up, 2-day down, 1-day up)
-    """
+   
     # Calculate daily price changes (today's close - yesterday's close)
     price_changes = df['Close'].diff()
     
@@ -89,30 +46,7 @@ def identify_runs(df):
     }
 
 def identify_run_periods(df):
-    """
-    Identify run periods with their start and end dates for visualization highlighting.
-    
-    This function extends the basic run analysis by providing specific date ranges
-    for each run period, making it suitable for visualization and detailed analysis.
-    Each run period includes timing information that can be used to highlight
-    trends on charts or perform time-based analysis.
-    
-    Args:
-        df (pandas.DataFrame): DataFrame containing stock data with a 'Close' column
-                              and a datetime index for accurate date tracking.
-    
-    Returns:
-        list: List of dictionaries, each representing a run period with keys:
-            - 'start_date': Start date of the run period
-            - 'end_date': End date of the run period  
-            - 'direction' (int): 1 for upward run, -1 for downward run
-            - 'length' (int): Number of days in the run
-            
-    Note:
-        Periods with no price change (direction = 0) are excluded from results.
-        This function is particularly useful for creating visualizations that
-        highlight trending periods on stock charts.
-    """
+
     # Calculate daily price changes (difference from previous day)
     price_changes = df['Close'].diff()
     
@@ -151,55 +85,13 @@ def identify_run_periods(df):
     return run_periods
 
 def calculate_daily_returns(df):
-    """
-    Calculate daily percentage returns for stock data.
-    
-    Daily return represents the percentage change in stock price from one day
-    to the next. It's calculated as: (Today's Close - Yesterday's Close) / Yesterday's Close
-    This is a fundamental metric for analyzing stock performance and volatility.
-    
-    Args:
-        df (pandas.DataFrame): DataFrame containing stock data with a 'Close' column.
-    
-    Returns:
-        pandas.Series: Series containing daily percentage returns. The first value
-                      will be NaN since there's no previous day for comparison.
-                      
-    Example:
-        If closing prices are [100, 105, 102], daily returns would be:
-        [NaN, 0.05, -0.0286] representing [N/A, +5%, -2.86%]
-    """
+ 
     # Calculate daily returns: (Today's Close - Yesterday's Close) / Yesterday's Close
     daily_returns = df['Close'].pct_change()
     return daily_returns
 
 def calculate_rsi(df, window=14):
-    """
-    Calculate Relative Strength Index (RSI) technical indicator.
     
-    RSI is a momentum oscillator that measures the speed and magnitude of price changes.
-    It oscillates between 0 and 100, where values above 70 typically indicate overbought
-    conditions and values below 30 indicate oversold conditions. The calculation uses
-    exponential moving averages of gains and losses over the specified window period.
-    
-    Args:
-        df (pandas.DataFrame): DataFrame containing stock data with a 'Close' column.
-        window (int, optional): Number of periods for RSI calculation. Defaults to 14,
-                               which is the standard period used in technical analysis.
-    
-    Returns:
-        pandas.Series: Series containing RSI values ranging from 0 to 100.
-                      Returns NaN values if insufficient data is available.
-                      
-    Note:
-        - RSI > 70: Potentially overbought (sell signal)
-        - RSI < 30: Potentially oversold (buy signal)  
-        - RSI around 50: Neutral momentum
-        
-    Example:
-        >>> rsi = calculate_rsi(df, window=14)
-        >>> overbought_days = rsi[rsi > 70]  # Find overbought periods
-    """
     # Handle empty or insufficient data
     if len(df) < window + 1:
         return pd.Series([np.nan] * len(df), index=df.index)
@@ -222,37 +114,7 @@ def calculate_rsi(df, window=14):
     return rsi
 
 def calculate_bollinger_bands(df, window=20, num_std=2):
-    """
-    Calculate Bollinger Bands technical indicator.
-    
-    Bollinger Bands consist of a middle line (simple moving average) and two outer bands
-    that are standard deviations away from the middle line. They help identify overbought
-    and oversold conditions by showing when prices are relatively high or low compared
-    to recent trading ranges.
-    
-    Args:
-        df (pandas.DataFrame): DataFrame containing stock data with a 'Close' column.
-        window (int, optional): Number of periods for moving average calculation. 
-                               Defaults to 20 (standard period).
-        num_std (int, optional): Number of standard deviations for the bands.
-                               Defaults to 2 (standard setting).
-    
-    Returns:
-        tuple: Three pandas Series containing:
-            - upper_band: Upper Bollinger Band (SMA + num_std * standard deviation)
-            - middle_band: Middle line (Simple Moving Average)  
-            - lower_band: Lower Bollinger Band (SMA - num_std * standard deviation)
-            
-    Note:
-        - Price touching upper band: Potentially overbought
-        - Price touching lower band: Potentially oversold
-        - Price squeezing between bands: Low volatility period
-        - Bands expanding: Increasing volatility
-        
-    Example:
-        >>> upper, middle, lower = calculate_bollinger_bands(df, window=20, num_std=2)
-        >>> squeeze_periods = df[(upper - lower) < threshold]  # Find low volatility periods
-    """
+   
     # Handle empty or insufficient data
     if len(df) < window:
         empty_series = pd.Series([np.nan] * len(df), index=df.index)
@@ -272,13 +134,7 @@ def calculate_bollinger_bands(df, window=20, num_std=2):
 
 # Entry point for direct script execution
 if __name__ == "__main__":
-    """
-    Entry point for direct script execution.
-    
-    When this module is run directly (e.g., python calculations.py), it displays
-    information about the available functions rather than executing tests.
-    This provides a quick reference for developers.
-    """
+  
     # This will only run when calculations.py is executed directly
     print("Enhanced calculations module loaded successfully!")
     print("Available functions:")
