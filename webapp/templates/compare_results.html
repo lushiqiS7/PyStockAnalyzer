@@ -28,7 +28,7 @@
   }
 
   function prepareDatasets(key, chartType = 'line', fill = false) {
-    return Object.entries(chartData).map(([ticker, data]) => ({
+    const datasets = Object.entries(chartData).map(([ticker, data]) => ({
       label: ticker,
       data: data[key],
       borderColor: getRandomColor(),
@@ -37,6 +37,63 @@
       tension: 0.1,
       type: chartType
     }));
+    
+    // Add run highlighting datasets for each ticker if showing prices
+    if (key === 'prices') {
+      Object.entries(chartData).forEach(([ticker, data]) => {
+        if (data.runs) {
+          // Add upward runs background
+          const upRuns = data.runs.filter(run => run.direction === 'up');
+          if (upRuns.length > 0) {
+            datasets.push({
+              label: `${ticker} Upward Runs`,
+              data: createRunBackgroundData(dates, data[key], upRuns),
+              type: 'bar',
+              backgroundColor: 'rgba(0, 255, 0, 0.1)',
+              borderColor: 'transparent',
+              order: 10
+            });
+          }
+          
+          // Add downward runs background
+          const downRuns = data.runs.filter(run => run.direction === 'down');
+          if (downRuns.length > 0) {
+            datasets.push({
+              label: `${ticker} Downward Runs`,
+              data: createRunBackgroundData(dates, data[key], downRuns),
+              type: 'bar',
+              backgroundColor: 'rgba(255, 0, 0, 0.1)',
+              borderColor: 'transparent',
+              order: 10
+            });
+          }
+        }
+      });
+    }
+    
+    return datasets;
+  }
+
+  // Function to create background data for run highlighting
+  function createRunBackgroundData(dates, prices, runs) {
+    const backgroundData = dates.map(() => null);
+    
+    runs.forEach(run => {
+      const startIdx = dates.indexOf(run.start);
+      const endIdx = dates.indexOf(run.end);
+      
+      if (startIdx !== -1 && endIdx !== -1) {
+        const periodPrices = prices.slice(startIdx, endIdx + 1).filter(p => p !== null);
+        const minPrice = Math.min(...periodPrices);
+        const maxPrice = Math.max(...periodPrices);
+        
+        for (let i = startIdx; i <= endIdx; i++) {
+          backgroundData[i] = maxPrice * 1.02;
+        }
+      }
+    });
+    
+    return backgroundData;
   }
 
   // Closing Prices Chart
