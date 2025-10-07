@@ -184,6 +184,17 @@
 </div>
 {% endif %}
 
+<div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
 
 <a href="{{ url_for('index') }}" class="btn btn-primary" style="margin-top: 2rem;">← Return to Home</a>
+
+<form method="POST" action="{{ url_for('analyze_or_compare') }}" style="margin-top: 2rem;">
+    <input type="hidden" name="tickers" value="{{ all_results | map(attribute='ticker') | join(',') }}">
+    <input type="hidden" name="period" value="{{ period }}">
+    <input type="hidden" name="sma_window" value="{{ sma_window }}">
+    <input type="hidden" name="mode" value="compare">
+    <button type="submit" class="btn btn-secondary">Refresh Data</button>
+  </form>
+</div>
+  
 {% endblock %}
