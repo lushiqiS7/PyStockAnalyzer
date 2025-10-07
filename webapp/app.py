@@ -1,48 +1,3 @@
-
-from flask import Flask, render_template, request, jsonify, Response, render_template_string, redirect, url_for
-import sys
-import os
-from datetime import datetime
-import pandas as pd
-
-# Add src directory to path to import your modules
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
-
-app = Flask(__name__)
-
-@app.route('/api/stock_data')
-def api_stock_data():
-    """API endpoint to return latest stock data for a given ticker (for real-time updates)"""
-    if not ANALYSIS_AVAILABLE:
-        return jsonify({'error': 'Analysis modules not available'}), 503
-    ticker = request.args.get('ticker', 'AAPL').upper()
-    period = request.args.get('period', '5d')  # default to 5d for intraday
-    sma_window = int(request.args.get('sma_window', '10'))
-    interval = request.args.get('interval', '1m')  # default to 1m for real-time
-    try:
-        stock_data = fetch_stock_data(ticker, period, interval)
-        if stock_data is None or stock_data.empty:
-            return jsonify({'error': 'No data available'}), 400
-        # Format x-axis labels for intraday vs daily
-        if interval.endswith('m') or interval.endswith('h'):
-            date_labels = [d.strftime('%Y-%m-%d %H:%M') for d in stock_data.index]
-        else:
-            date_labels = [d.strftime('%Y-%m-%d') for d in stock_data.index]
-        sma = calculate_sma(stock_data, sma_window)
-        rsi = calculate_rsi(stock_data, 14)
-        # Prepare data for chart
-        chart_data = {
-            'dates': date_labels,
-            'prices': stock_data['Close'].round(2).tolist(),
-            'sma': sma.round(2).where(pd.notnull(sma), None).tolist(),
-            'rsi': rsi.round(2).where(pd.notnull(rsi), None).tolist(),
-            'volume': stock_data['Volume'].astype(int).tolist(),
-            'current_price': round(stock_data['Close'].iloc[-1], 2)
-        }
-        return jsonify(chart_data)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 from flask import Flask, render_template, request, jsonify, Response, render_template_string, redirect, url_for
 import sys
 import os
@@ -121,6 +76,8 @@ def analyze_or_compare():
             all_results=all_results,
             all_charts=all_charts,
             analysis_date=analysis_date,
+            sma_window=sma_window,
+            period=period,
             recommendation_reason="best overall score across return, risk, and RSI indicators",
             best_score=best_stock["score"] if best_stock else None,
             recommended_ticker=recommended_ticker
@@ -265,25 +222,7 @@ def not_found(error):
 def internal_error(error):
     return render_template('error.html', error="Internal server error"), 500
 
-@app.route('/refresh', methods=['POST'])
-def refresh_data():
-    """Refresh stock data and re-analyze"""
-    if not ANALYSIS_AVAILABLE:
-        return render_template('error.html', error="Analysis modules not available. Please check your installation.")
-    try:
-        tickers_input = request.form.get('tickers')
-        period = request.form.get('period', '6mo')
-        sma_window = int(request.form.get('sma_window', '10'))
-        # Reuse analyze_stock logic
-        # You can refactor analyze_stock to a helper function to avoid code duplication
-        request.form = request.form.copy()
-        request.form['tickers'] = tickers_input
-        request.form['period'] = period
-        request.form['sma_window'] = sma_window
-        return analyze_stock()
-    except Exception as e:
-        return render_template('error.html', error=f"Refresh error: {str(e)}")
-
+    
 if __name__ == '__main__':
     print("Starting PyStock Analyzer Web Server...")
     if not ANALYSIS_AVAILABLE:

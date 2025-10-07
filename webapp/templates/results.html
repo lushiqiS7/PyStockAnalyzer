@@ -289,7 +289,7 @@
   </div>
   </div>
 
-  <div class="action-buttons">
+  <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
   <a href="{{ url_for('index') }}" class="btn btn-primary">
           ← Return to Home
   </a>
@@ -298,14 +298,14 @@
       📥 Export Results as CSV
   </a>
 
-  </div>
-
-  
-<form method="POST" action="{{ url_for('refresh_data') }}">
+  <form method="POST" action="{{ url_for('analyze_stock') }}" style ="display: inline;">
     <input type="hidden" name="tickers" value="{{ results['ticker'] }}">
     <input type="hidden" name="period" value="{{ results['period'] }}">
     <input type="hidden" name="sma_window" value="{{ results['sma_window'] }}">
-    <button type="submit" class="btn btn-primary">Refresh Data</button>
-</form>
+    <button class="btn btn-secondary">Refresh Data</button>
+  </form>
+
+  </div>
+
 
   {% endblock %}
