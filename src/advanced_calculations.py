@@ -10,7 +10,25 @@ from calculations import calculate_sma, calculate_daily_returns
 
 
 def calculate_max_profit(prices):
-
+    """
+    Calculate the maximum profit that could be achieved from buying and selling stocks.
+    
+    This function implements a greedy approach where it assumes you can buy and sell
+    multiple times to maximize profit. It calculates profit by summing all positive
+    price changes (buying at each local minimum and selling at each local maximum).
+    
+    Args:
+        prices (list or array-like): A sequence of stock prices in chronological order.
+        
+    Returns:
+        float: The maximum profit that could be achieved. Returns 0 if no profit
+               is possible (prices only decline or stay flat).
+               
+    Example:
+        >>> prices = [7, 1, 5, 3, 6, 4]
+        >>> calculate_max_profit(prices)
+        7  # Buy at 1, sell at 5 (profit: 4), buy at 3, sell at 6 (profit: 3)
+    """
     max_profit = 0
     
     # Iterate through prices starting from the second day

@@ -27,25 +27,33 @@ import os
 # Import core analysis modules
 from data_loader import fetch_stock_data
 from visualizer import plot_stock_data, display_analysis_results
-from advanced_calculations import run_validation_tests
+from validation import run_comprehensive_validation
 
 
 def cli_interface():
     """
-    Command-line interface for stock analysis.
+    Provide command-line interface for stock analysis.
     
-    This function provides a text-based interface for users who prefer
-    terminal interaction. It guides users through the analysis process,
-    validates inputs, fetches data, performs calculations, and displays
-    results. Includes options for data export and visualization.
+    This function implements the CLI interface that allows users to analyze
+    stocks through a text-based terminal interface. It guides users through
+    the input process, performs comprehensive analysis, and displays results
+    in the terminal with optional visualization charts.
     
     Features:
-        - Interactive parameter input with defaults
-        - Input validation and error handling
-        - Comprehensive analysis results display
-        - Data visualization generation
-        - CSV export functionality
-        - Graceful error recovery
+        - Interactive input prompts with validation
+        - Comprehensive stock data analysis
+        - Technical indicators calculation and display
+        - Interactive chart visualization
+        - Optional CSV data export
+        - Error handling and user guidance
+        
+    Process:
+        1. System validation tests
+        2. User input collection (ticker, period, SMA window)
+        3. Data fetching from Yahoo Finance
+        4. Technical analysis calculations
+        5. Results display and visualization
+        6. Optional data export to CSV
     """
     print("Welcome to PyStock Analyzer CLI!")
     print("=" * 40)
@@ -54,7 +62,7 @@ def cli_interface():
     
     # Run validation tests first to ensure system integrity
     print("\nRunning system validation tests...")
-    run_validation_tests()
+    run_comprehensive_validation()
     print()
     
     try:
@@ -117,23 +125,23 @@ def cli_interface():
 
 def gui_interface():
     """
-    Launch the graphical user interface.
+    Launch the graphical user interface for interactive stock analysis.
     
-    This function starts the GUI application in a separate process to provide
-    a rich visual interface for stock analysis. The GUI includes interactive
-    charts, technical indicators, and comprehensive analysis displays.
+    This function starts the tkinter-based GUI application that provides
+    a visual interface with charts, interactive controls, and real-time
+    analysis results. The GUI runs in a separate process to maintain
+    independence from the main menu system.
     
     Features:
-        - Interactive matplotlib charts with hover tooltips
-        - Real-time analysis parameter adjustment
-        - Technical indicator overlays
-        - Run period highlighting
-        - Export capabilities
-        - Professional chart styling
+        - Interactive stock data input controls
+        - Real-time chart visualization with technical indicators
+        - Bollinger Bands and RSI analysis
+        - Run period highlighting on charts
+        - Results display with comprehensive analysis
+        - Export functionality for data and charts
         
     Note:
-        The GUI runs in a separate process to prevent conflicts with the
-        main menu system and ensure proper resource management.
+        The GUI runs independently - close the GUI window to return to the main menu.
     """
     import subprocess
     
@@ -163,30 +171,29 @@ def gui_interface():
 
 def web_interface():
     """
-    Launch the web-based interface.
+    Launch the Flask web interface for browser-based stock analysis.
     
-    This function starts a Flask web server that provides a browser-based
-    interface for stock analysis. The web interface is accessible from any
-    device with a web browser and provides the same analytical capabilities
-    as the desktop interfaces.
+    This function starts the Flask web server that provides a web-based
+    interface accessible through any modern web browser. The web interface
+    offers the same analytical capabilities as other interfaces but through
+    a responsive web application.
     
     Features:
-        - Browser-based accessibility
-        - Responsive web design
+        - Browser-based interface accessible from any device
+        - Multi-stock comparison capabilities
         - Interactive charts and visualizations
-        - Multi-device compatibility
-        - Network accessibility
-        - Modern web UI/UX
+        - Real-time analysis and results display
+        - CSV data export functionality
+        - RESTful API endpoints for external integration
         
-    Server Configuration:
-        - Host: 0.0.0.0 (accessible from network)
-        - Port: 5000
-        - Debug mode: Enabled for development
-        - Auto-reload: Disabled to prevent conflicts
+    Server Details:
+        - Runs on localhost:5000 by default
+        - Accessible via http://localhost:5000
+        - Supports concurrent users
+        - Hot-reload enabled for development
         
     Note:
-        The server will run until manually stopped with Ctrl+C.
-        Access the interface at http://localhost:5000 or your machine's IP address.
+        Press Ctrl+C to stop the web server and return to the main menu.
     """
     try:
         print("🌐 Starting Web Interface...")
@@ -232,12 +239,22 @@ def web_interface():
 
 def show_menu():
     """
-    Display the main application menu.
+    Display the main menu interface for the PyStock Analyzer application.
     
-    This function presents a user-friendly menu interface that allows users
-    to choose between different analysis interfaces and system functions.
-    The menu provides clear descriptions and visual formatting for better
-    user experience.
+    This function presents a user-friendly menu system that allows users to
+    choose between different interface options (CLI, GUI, Web) or run system
+    validation. The menu provides clear descriptions of each interface option
+    and handles user input for navigation.
+    
+    Menu Options:
+        1. CLI: Command-line interface for terminal-based analysis
+        2. GUI: Graphical interface with interactive charts
+        3. Web: Browser-based interface for web access
+        4. Validation: Comprehensive system testing
+        5. Exit: Clean application termination
+        
+    Returns:
+        str: User's menu choice as a string ('1', '2', '3', '4', or '5')
     """
     print("\n" + "=" * 50)
     print("            PYSTOCK ANALYZER")
@@ -264,26 +281,28 @@ def show_menu():
 
 def main():
     """
-    Main application controller and menu system.
+    Main application entry point and control loop.
     
-    This function implements the primary application loop, handling user
-    menu selection and routing to appropriate interface functions. It
-    provides a persistent menu system that allows users to switch between
-    different interfaces without restarting the application.
+    This function serves as the primary entry point for the PyStock Analyzer
+    application. It manages the main application loop, handles user menu
+    navigation, and coordinates access to different interface options.
     
-    Menu Options:
-        1. CLI: Command-line interface for terminal users
-        2. GUI: Graphical interface with interactive charts
-        3. Web: Browser-based interface for network access
-        4. Validation: System testing and verification
-        5. Exit: Clean application shutdown
+    The function provides:
+        - Welcome message and application introduction
+        - Continuous menu loop for interface selection
+        - Error handling for user input and interface failures
+        - Graceful exit handling with cleanup
+        - Exception management for robust operation
         
-    Features:
-        - Persistent menu loop until user exits
-        - Input validation and error handling
-        - Clear user feedback and guidance
-        - Graceful error recovery
-        - Professional user experience
+    Interface Routing:
+        - Choice 1: CLI interface for command-line analysis
+        - Choice 2: GUI interface for graphical interaction
+        - Choice 3: Web interface for browser-based access
+        - Choice 4: Validation testing for system verification
+        - Choice 5: Application exit with cleanup
+        
+    The loop continues until the user chooses to exit or encounters
+    an unrecoverable error.
     """
     print("🎉 Welcome to PyStock Analyzer!")
     print("Your comprehensive tool for stock market analysis.")
@@ -310,7 +329,7 @@ def main():
                 
             elif choice == "4":
                 print("\n🔍 Running comprehensive validation tests...")
-                run_validation_tests()
+                run_comprehensive_validation()
                 input("\n✅ Validation complete. Press Enter to continue...")
                 continue
                 
