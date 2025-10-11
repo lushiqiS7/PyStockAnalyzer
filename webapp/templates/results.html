@@ -346,7 +346,7 @@
   </a>
   
   
-  <form method="POST" action="{{ url_for('refresh_data') }}" style="display: inline;">
+  <form method="POST" action="{{ url_for('analyze_stock') }}" style="display: inline;">
       <input type="hidden" name="tickers" value="{{ results['ticker'] }}">
       <input type="hidden" name="period" value="{{ results['period'] }}">
       <input type="hidden" name="sma_window" value="{{ results['sma_window'] }}">

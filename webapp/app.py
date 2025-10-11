@@ -192,7 +192,8 @@ def analyze_or_compare():
                 analysis_date=analysis_date,
                 recommendation_reason="Highest overall score based on return, risk, and technical indicators",
                 best_score=best_stock["score"] if best_stock else None,
-                recommended_ticker=best_stock["ticker"] if best_stock else None
+                recommended_ticker=best_stock["ticker"] if best_stock else None,
+                
             )
         else:
             # =============== SINGLE STOCK ANALYSIS MODE ===============
